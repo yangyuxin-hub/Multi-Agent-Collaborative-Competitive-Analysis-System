@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>多 Agent 协作式竞品分析系统 · 架构图</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f7f8fa;
+    color: #1a1a1a;
+    line-height: 1.6;
+    padding: 40px 20px;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+    padding-bottom: 24px;
+    border-bottom: 2px solid #e1e4e8;
+  }
+  header h1 {
+    font-size: 32px;
+    color: #0366d6;
+    margin-bottom: 8px;
+  }
+  header .subtitle {
+    font-size: 14px;
+    color: #6a737d;
+  }
+  nav {
+    background: #fff;
+    border: 1px solid #e1e4e8;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 32px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  nav h3 {
+    font-size: 14px;
+    color: #6a737d;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  nav ul { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px; }
+  nav a {
+    color: #0366d6;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    display: block;
+    transition: background 0.15s;
+    font-size: 14px;
+  }
+  nav a:hover { background: #f1f8ff; }
+  section {
+    background: #fff;
+    border: 1px solid #e1e4e8;
+    border-radius: 8px;
+    padding: 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  section h2 {
+    font-size: 22px;
+    color: #24292e;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  section h2 .num {
+    background: #0366d6;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+  section .desc {
+    color: #6a737d;
+    font-size: 14px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px dashed #e1e4e8;
+  }
+  .mermaid {
+    background: #fafbfc;
+    border-radius: 6px;
+    padding: 24px;
+    text-align: center;
+    overflow-x: auto;
+  }
+  footer {
+    text-align: center;
+    color: #6a737d;
+    font-size: 13px;
+    padding: 24px 0;
+    margin-top: 24px;
+  }
+  footer a { color: #0366d6; text-decoration: none; }
+  @media print {
+    body { background: white; padding: 0; }
+    section { page-break-inside: avoid; box-shadow: none; }
+    nav { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>多 Agent 协作式竞品分析系统</h1>
+    <div class="subtitle">系统架构图 · 字节 AI 全栈挑战赛参赛项目（2026.05.20 - 2026.06.10）</div>
+  </header>
+
+  <nav>
+    <h3>📋 目录</h3>
+    <ul>
+      <li><a href="#fig1">① 整体分层架构</a></li>
+      <li><a href="#fig2">② Agent 工作流时序</a></li>
+      <li><a href="#fig3">③ 数据流与引用追踪</a></li>
+      <li><a href="#fig4">④ Agent 统一输出 Schema</a></li>
+      <li><a href="#fig5">⑤ 创新点对照视图</a></li>
+      <li><a href="#fig6">⑥ 部署架构</a></li>
+    </ul>
+  </nav>
+
+  <section id="fig1">
+    <h2><span class="num">1</span>整体分层架构</h2>
+    <div class="desc">从用户输入到最终报告，系统分七层：用户 → 前端 → API → 编排 → Agent → 工具 → 存储。</div>
+    <div class="mermaid">
+graph TB
+    subgraph User["👤 用户层"]
+        U[用户输入产品名]
+    end
+    subgraph Frontend["🎨 前端层 Next.js 14"]
+        TI[TaskInput 输入框]
+        AT[AgentTimeline 进度可视化]
+        RV[ReportViewer 报告展示]
+        CT[ComparisonTable 对比表格]
+    end
+    subgraph API["🔌 API 层 FastAPI"]
+        REST[REST API<br/>任务/报告/PDF]
+        WS[WebSocket<br/>实时进度推送]
+    end
+    subgraph Orchestration["🧠 编排层 LangGraph"]
+        GRAPH[工作流引擎<br/>状态机 + 并行调度]
+    end
+    subgraph Agents["🤖 Agent 层"]
+        A1[任务规划]
+        A2[信息采集]
+        A3[信息抽取]
+        A4[竞品对比]
+        A5[洞察分析]
+        A6[报告生成]
+    end
+    subgraph Tools["🛠️ 工具层"]
+        T1[Tavily 搜索]
+        T2[Serper 兜底]
+        T3[BeautifulSoup 解析]
+        T4[Claude API]
+        T5[WeasyPrint PDF]
+    end
+    subgraph Storage["💾 存储层"]
+        DB[(PostgreSQL<br/>任务/竞品/引用)]
+        FS[本地文件系统<br/>PDF/快照]
+    end
+    U --> TI
+    TI --> REST
+    REST --> GRAPH
+    GRAPH --> A1
+    GRAPH --> A2
+    GRAPH --> A3
+    GRAPH --> A4
+    GRAPH --> A5
+    GRAPH --> A6
+    A1 --> T4
+    A2 --> T1
+    A2 --> T2
+    A2 --> T3
+    A3 --> T4
+    A4 --> T4
+    A5 --> T4
+    A6 --> T4
+    A6 --> T5
+    GRAPH --> DB
+    A6 --> FS
+    GRAPH --> WS
+    WS --> AT
+    REST --> RV
+    REST --> CT
+    style User fill:#e1f5ff
+    style Frontend fill:#fff3e0
+    style API fill:#f3e5f5
+    style Orchestration fill:#e8f5e9
+    style Agents fill:#fff9c4
+    style Tools fill:#fce4ec
+    style Storage fill:#f5f5f5
+    </div>
+  </section>
+
+  <section id="fig2">
+    <h2><span class="num">2</span>Agent 工作流时序</h2>
+    <div class="desc">六个 Agent 串/并行执行关系，含每个超时数字。竞品对比 + 洞察分析并行执行。</div>
+    <div class="mermaid">
+flowchart LR
+    START([用户输入<br/>产品名]) --> P[任务规划 Agent<br/>20s]
+    P --> C[信息采集 Agent<br/>90s]
+    C --> E[信息抽取 Agent<br/>60s]
+    E --> COMP[竞品对比 Agent<br/>45s]
+    E --> ANA[洞察分析 Agent<br/>45s]
+    COMP --> R[报告生成 Agent<br/>60s]
+    ANA --> R
+    R --> END([Markdown + PDF<br/>含引用])
+    style START fill:#4caf50,color:#fff
+    style END fill:#2196f3,color:#fff
+    style P fill:#fff9c4
+    style C fill:#fff9c4
+    style E fill:#fff9c4
+    style COMP fill:#fff9c4
+    style ANA fill:#fff9c4
+    style R fill:#fff9c4
+    </div>
+  </section>
+
+  <section id="fig3">
+    <h2><span class="num">3</span>数据流与引用追踪</h2>
+    <div class="desc">一次完整请求的全链路时序。核心卖点：sources 在每个 Agent 间透传，最终在报告里悬浮展示。</div>
+    <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant U as 用户
+    participant F as 前端
+    participant API as FastAPI
+    participant G as LangGraph
+    participant A as Agent
+    participant T as Tavily/Claude
+    participant DB as PostgreSQL
+    U->>F: 输入"Notion AI 的竞品"
+    F->>API: POST /api/tasks
+    API->>DB: 创建 task 记录
+    API-->>F: 返回 task_id
+    F->>API: WS /ws/tasks/{id} 订阅
+    API->>G: 启动工作流
+    loop 每个 Agent
+        G->>A: 执行 Agent
+        A->>T: 调用工具<br/>(搜索/LLM)
+        T-->>A: 返回数据 + sources
+        A->>DB: 持久化输出 + sources
+        A-->>G: 返回统一 Schema
+        G-->>API: 状态更新
+        API-->>F: WS 推送进度
+    end
+    G->>API: 工作流完成
+    API->>DB: 生成最终报告
+    F->>API: GET /api/reports/{id}
+    API-->>F: 报告 + 引用映射
+    F-->>U: 渲染报告<br/>结论悬浮显示来源
+    </div>
+  </section>
+
+  <section id="fig4">
+    <h2><span class="num">4</span>Agent 统一输出 Schema</h2>
+    <div class="desc">所有 Agent 必须返回此结构。sources 字段全链路透传到报告，errors 不阻塞流程。</div>
+    <div class="mermaid">
+classDiagram
+    class AgentOutput {
+        +string agent
+        +string status
+        +object data
+        +Source[] sources
+        +Error[] errors
+        +datetime started_at
+        +datetime finished_at
+    }
+    class Source {
+        +string url
+        +string title
+        +string snippet
+        +datetime retrieved_at
+    }
+    class Error {
+        +string code
+        +string message
+        +bool fatal
+    }
+    AgentOutput "1" --> "*" Source
+    AgentOutput "1" --> "*" Error
+    </div>
+  </section>
+
+  <section id="fig5">
+    <h2><span class="num">5</span>创新点对照视图</h2>
+    <div class="desc">五个创新点对应五个评分维度，答辩 PPT 可直接复用此结构。</div>
+    <div class="mermaid">
+mindmap
+  root((竞品分析<br/>Agent系统))
+    技术创新
+      多Agent协作机制
+      LangGraph编排
+      并行执行
+    可信度
+      sources全链路透传
+      结论绑定来源
+      解决LLM幻觉
+    完成度
+      端到端自动化
+      一句话输入
+      PDF报告输出
+    商业价值
+      SWOT分析
+      功能矩阵
+      定价矩阵
+    体验
+      Agent过程可视化
+      实时进度推送
+      引用悬浮展示
+    </div>
+  </section>
+
+  <section id="fig6">
+    <h2><span class="num">6</span>部署架构</h2>
+    <div class="desc">本地开发环境 + 外部服务。MVP 阶段不引入 Redis / MinIO / 向量库。</div>
+    <div class="mermaid">
+graph LR
+    subgraph Local["本地开发 / Demo 环境"]
+        FE[Next.js<br/>:3000]
+        BE[FastAPI<br/>:8000]
+        PG[(PostgreSQL<br/>Docker)]
+        FS[./data/]
+    end
+    subgraph External["外部服务"]
+        CLAUDE[Anthropic<br/>Claude API]
+        TAVILY[Tavily 搜索]
+        SERPER[Serper 兜底]
+    end
+    FE -.HTTP/WS.-> BE
+    BE -.SQL.-> PG
+    BE -.读写.-> FS
+    BE -.HTTPS.-> CLAUDE
+    BE -.HTTPS.-> TAVILY
+    BE -.HTTPS.-> SERPER
+    style Local fill:#e8f5e9
+    style External fill:#fff3e0
+    </div>
+  </section>
+
+  <footer>
+    作者：小羊肖恩 · <a href="https://github.com/yangyuxin-hub/Multi-Agent-Collaborative-Competitive-Analysis-System" target="_blank">GitHub 仓库</a> · 用浏览器打开本文件即可查看
+  </footer>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    securityLevel: 'loose',
+    flowchart: { curve: 'basis', padding: 20 },
+    sequence: { actorMargin: 50, messageMargin: 40 },
+    themeVariables: { fontFamily: 'inherit', fontSize: '14px' }
+  });
+</script>
+</body>
+</html>

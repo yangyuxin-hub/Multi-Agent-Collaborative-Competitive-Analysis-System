@@ -1,12 +1,12 @@
 # 竞品分析领域知识（写报告必读）
 
-> 决定 extractor 抽什么字段、comparator 做什么矩阵、analyzer 写什么洞察的**业务侧依据**。
+> 决定 `extract_fields` tool 抽什么字段、主 agent 综合什么矩阵、写什么洞察的**业务侧依据**。
 
 ---
 
 ## 一、不同读者关心的东西完全不同
 
-planner 后的 clarifier 必须先问"**你是哪种视角看这份报告？**"——视角决定字段权重。
+主 agent 必须用 `ask_user` 先问"**你是哪种视角看这份报告？**"——视角决定字段权重。
 
 | 读者 | 用途 | 最关心 |
 |------|-----|--------|
@@ -88,11 +88,11 @@ planner 后的 clarifier 必须先问"**你是哪种视角看这份报告？**"�
 | 差评/痛点 | ⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐⭐ |
 | 增长信号 | ⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐ |
 
-**默认视角 = PM**（最通用），其他视角通过 clarifier 切换权重。
+**默认视角 = PM**（最通用），其他视角通过 `ask_user` 切换权重。
 
 ---
 
-## 五、extractor 的目标 Schema
+## 五、Researcher subagent 返回卡片 Schema（`extract_fields` 目标）
 
 ```python
 class Competitor(TypedDict):
@@ -124,12 +124,12 @@ class Competitor(TypedDict):
     negative_reviews: list[str]
     growth_signals: list[str]
 
-    sources: list[Source]
+    source_ids: list[str]    # 引用 sources_pool 中的 id
 ```
 
 ---
 
-## 六、collector 的信息源 + Tavily Query 模板
+## 六、Researcher 的信息源 + Tavily Query 模板
 
 | 数据 | 优先级 | 来源 |
 |------|-------|-----|

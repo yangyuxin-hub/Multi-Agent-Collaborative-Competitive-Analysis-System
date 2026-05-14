@@ -1,126 +1,86 @@
-# 差异化定位 & 相关产品/开源项目
+# 差异化定位 & 相关产品
 
-> 答辩用素材：证明做的是真实需求 + 在已有方案中做出独特性。
+> 答辩素材。证明做的是真实需求 + 在已有方案中做出独特性。
 
----
+## 一、商业产品对照
 
-## 一、商业产品对照组
+| 产品 | 定位 | 价格 | 差异 |
+|------|------|------|------|
+| Crayon | 企业 CI 监控，长周期追踪 | $20-40K/年 | 持续监控；本项目**一次性深度调研** |
+| Klue | 销售赋能 Battlecard + Agentic AI | $20-40K/年 | 输出销售话术；本项目输出**结构化分析报告** |
+| Kompyte | 网站/数字追踪自动化 | $300+/年 | SEO 监控为主；本项目偏**多维战略分析** |
 
-| 产品 | 定位 | 价格 | 跟本项目差异 |
-|------|-----|------|----------|
-| **Crayon** | 企业级 CI 监控，大量竞品追踪 | ~$20-40K/年 | 持续监控为主；本项目做**一次性深度调研**，无登录、轻量 |
-| **Klue** | 销售赋能（Battlecard）+ Agentic AI | ~$20-40K/年 | 输出销售话术卡片；本项目输出**结构化分析报告** |
-| **Kompyte**（已被 Semrush 收购）| 中端，网站/数字追踪自动化 | $300+/年 | 偏 SEO 营销监控；本项目偏**多维度战略分析** |
+**核心差异**：它们 SaaS 订阅 + 长周期监控 + 黑盒；本项目**一次输入即出报告 + 过程可视化 + 每条结论可溯源 + 几乎零成本**。
 
-**核心差异化**：
-1. 它们都是 SaaS 订阅 + 长周期监控；本项目是**输入产品名一次性出报告**
-2. 它们封闭黑盒；本项目**多 Agent 过程可视化 + 每条结论可溯源**
-3. 它们万元美金起步；本项目**几乎零成本**
+## 二、开源对标
 
----
+### GPT-Researcher（最相关，必须深入研究）
+- https://github.com/assafelovic/gpt-researcher · 20K+ star
+- 通用研究 agent：任意主题 → 2000+ 字带引用长文
+- 架构：planner + N executor + publisher
 
-## 二、开源对标（必须深入研究）
-
-### 🎯 GPT-Researcher — 最相关
-- https://github.com/assafelovic/gpt-researcher
-- **20K+ star**，开源 deep research agent 标杆
-- 已用 **LangGraph + AG2 做多 Agent**，写带引用的长报告
-- **要做**：clone 下来跑一次"Notion AI 竞品分析"，截图作为答辩对照
-
-**它的本质：通用研究框架，不是竞品分析专用**
-- 输入：任意主题（"AI 对金融业的影响"也行）
-- 输出：2000+ 字带引用的叙述性长文
-- 架构：planner + N 个 executor + publisher（3 类角色）
-
-**本项目相对差异**：
 | 维度 | GPT-Researcher | 本项目 |
 |------|--------------|--------|
-| 场景 | 任意主题研究 | 垂直竞品分析 |
-| 输入 | 自然语言问题 | 产品/公司名 |
-| 输出形态 | 叙述性长文 | **结构化对比矩阵 + SWOT + 报告** |
-| Agent 设计 | 3 类角色 | 6 个职责显式分工 |
-| 过程可视化 | 简单 UI | **Timeline 动画 + 实时澄清** |
-| 人机协同 | 无 | **planner 后多选澄清** |
-| 决策框架 | 无（纯信息汇总） | **内置功能矩阵/定价矩阵/SWOT** |
+| 场景 | 任意主题研究 | **垂直竞品分析** |
+| 输出 | 叙述性长文 | **结构化矩阵 + SWOT** |
+| 架构 | 预定义角色循环 | **Claude Code 风格 主 Agent + 专用 subagent** |
+| 引用 | 文末列表 | **三道防线 + 悬浮溯源** |
+| 人机协同 | 无 | **主 agent 自主调用澄清** |
+| 可视化 | 简单 UI | **事件流 + 嵌套 subagent + 预算条** |
 
-### 🎯 LangChain Open Deep Research — 架构参考
-- https://github.com/langchain-ai/open_deep_research
-- LangChain 官方实现，Deep Research Bench 排名 #6
-- **必读**：State 设计、节点拆分、checkpointer 用法可直接借鉴
+**5/20 必须 clone 跑一次 Notion AI 调研，截图对照**。
 
-### 🎯 Local Deep Researcher — 反思循环范本
-- https://github.com/langchain-ai/local-deep-researcher
-- 实现"搜索→总结→反思缺口→再搜→出报告"循环
-- **本项目 reporter gap_filler 子循环**直接参考
+### 其他参考
+- **LangChain Open Deep Research** — Deep Research Bench #6，state 设计可参考
+- **Local Deep Researcher** — 搜索→反思→再搜循环，主 agent 缺字段补抓的思路源头
+- **Claude Code** — 主 Agent + Tools + Task() subagent 范式的标杆，直接借用
 
-### 🎯 Deep Agents — 通用 Agent harness
-- https://github.com/langchain-ai/deepagents
-- MIT 许可，扩展性强
+## 三、为什么不直接用 Claude Code
 
-### 📚 Awesome-Deep-Research
-- https://github.com/DavidZWZ/Awesome-Deep-Research
-- 资源列表
+| 维度 | Claude Code | 本项目 |
+|------|-----------|--------|
+| 任务范围 | 通用编程 | 垂直竞品分析 |
+| 工具集 | bash/file/grep 等 | 专项化 6 个工具（含 search/extract/write_section）|
+| Subagent | 通用 Task | 仅 1 类 research_competitor，schema 固定 |
+| 输出 | 自由文本 | 强约束结构化报告 + 引用追踪 |
+| 用户介入 | 命令行问答 | **主 agent 自主调用 ask_user 弹多选卡片** |
+| 评估 | 不适用 | 三个验收 case + baseline 比对 |
 
----
-
-## 三、Multi-Agent 框架对比（2026 市场）
-
-| 框架 | 月搜索量 | 定位 | 选它吗 |
-|------|---------|-----|------|
-| **LangGraph** | 27,100（第一）| 显式图 + 状态 + checkpointer，**production 首选** | ✅ 已选 |
-| **CrewAI** | 14,800 | 角色化 Agent 团队，**易学** | 备选 |
-| **AutoGen** | — | 对话式多 Agent，研究/原型 | ❌ 微软已弱化 |
-| **OpenAgents** | — | 唯一原生支持 MCP + A2A | ❌ 太新 |
-
-**选 LangGraph 的理由**：图结构稳定 + 状态共享 + checkpointer + human-in-the-loop —— 全是本项目需要的。
-
----
+**一句话**：Claude Code 是范式，本项目是这个范式在"竞品分析"任务上的产品化。
 
 ## 四、答辩三句话定位
 
-> 1. **架构**：垂直竞品分析场景下，LangGraph DAG 显式编排 6 个 Agent，相比 Deep Research 的黑盒循环，**过程可视化、可控、可降级**。
-> 2. **人机协同**：planner 后借鉴 Claude Code 的 `AskUserQuestion` 机制做意图对齐，避免"两万字报告跑偏"。
-> 3. **工程**：State 分层 + 模型分层 + Prompt Cache，单次成本 5 美分内、90 秒出报告，每条结论可追溯到原始链接。
-
----
+1. **架构**：Claude Code 范式专项化 — Agent SDK 主循环 + 1 类专用 subagent，比预定义 DAG 灵活、比通用 agent 可控。
+2. **工程**：引用追踪三道防线（tool 入口分配 source_id + write_section schema 校验 + 前端二次校验），从根本上消除 URL 幻觉。
+3. **协同**：主 agent 自主判断何时调用 `ask_user` 澄清，不预定义节点；事件流可视化思考链 + 嵌套 subagent + 实时预算条。
 
 ## 五、应对评委可能的提问
 
-### Q1: "GPT-Researcher 已经有了，你做的有啥用？"
-> GPT-Researcher 是**通用研究助手**，输出叙述性长文。本项目做**垂直竞品分析**：
-> ① **决策导向的结构化输出**（功能矩阵 / 定价矩阵 / SWOT，不是长文）
-> ② **过程可视化的六 Agent DAG**（不是黑盒 ReAct loop）
-> ③ **planner 后的意图澄清**（避免跑偏）
->
-> 本质上是 **GPT-Researcher 的检索能力 + Klue 的决策框架 + Claude Code 的人机协同**三者的交集。
+**Q: "GPT-Researcher 已经有了，做这个有啥用？"**
+> GPT-Researcher 是**通用研究助手**，输出叙述性长文。本项目做**垂直竞品分析**：① 决策导向的结构化输出（功能矩阵 / 定价矩阵 / SWOT）② Claude Code 式主 Agent + 专用 subagent，比预定义角色更灵活 ③ 引用追踪三道防线，从根本上消除 URL 幻觉。
 
-### Q2: "为什么不做成 Claude Code 那种动态 Agent？"
-> Claude Code 是**通用工具调用 Agent**，控制流由 LLM 决定，灵活但**过程不可视化、不可预测**——这对编程助手是优点，对答辩 Demo 是缺点。本项目做**垂直 DAG + 关键节点人机协同**：流程固定保证可视化和可控性，在 planner 后借鉴 `AskUserQuestion` 机制做意图对齐——在灵活和可控之间取了适合竞品分析场景的平衡点。
+**Q: "为什么不用 LangGraph DAG？流程更可控。"**
+> DAG 把 agent 的决策路径硬编码，本质用工程兜底模型能力。Claude Code 已证明主 Agent 自主规划 + 工具调用 + 子 agent 并发的范式可工业化。我们的可控性不靠 DAG，而靠：tool schema 强约束 + 预算自感知 + 主 agent system prompt 引导 + 8 分钟硬超时降级。
 
-### Q3: "上下文怎么控制？多 Agent 不会爆吗？"
-> 我们用 **State 分层**：原始网页落 `./data/snapshots/`，State 只存路径；每个 Agent 只读自己需要的字段；extractor 用 Haiku 4.5 分批并发处理大体量；planner / reporter 用 Prompt Cache。优化后单次任务 ~$0.05、90 秒内出报告，比无脑透传方案省 10 倍。
+**Q: "上下文怎么控制？多 agent 不会爆吗？"**
+> 主 agent 只看 subagent 返回的结构化卡片，**不看原始网页**（噪声留在 subagent 独立 thread）。Prompt Caching 缓存 system prompt 大头（目标命中 > 70%）。单任务预算 ≤ $0.05，端到端 90s 内。
 
----
+## 六、答辩 PPT 关键页
 
-## 六、答辩 PPT 关键页建议
+**"赛道全景"页**
+- 商业：Crayon / Klue（贵 + 黑盒 + 监控为主）
+- 开源：GPT-Researcher / Open Deep Research（通用 + 长文 + 无结构化对比）
+- 范式：Claude Code（通用编程 agent）
+- **我们**：Claude Code 范式 × 竞品分析垂直场景 × 引用追踪 × 事件流可视化
 
-**"赛道全景图"页**：
-- 商业：Crayon / Klue / Kompyte（贵 + 黑盒 + 监控为主）
-- 开源：GPT-Researcher / Open Deep Research（通用 + 长文 + 无对比矩阵）
-- **我们**：垂直 + 可视化 + 结构化对比 + 可溯源 + 人机协同
-
-**"输出对比"页**（视觉冲击力最强）：
-- 左侧：GPT-Researcher 输出（一坨长文）
-- 右侧：本项目输出（矩阵 + 可视化 + 引用悬浮）
-
----
+**"输出对比"页**（视觉冲击力最强）
+- 左：GPT-Researcher 输出（一坨叙述长文）
+- 右：本项目输出（功能矩阵 + 定位象限 + 悬浮引用）
 
 ## 七、风险提示
 
-⚠️ **GPT-Researcher 很成熟，工程量必须聚焦在它没做的事上**：
-- 不要重复造检索 + 长文生成轮子
-- All-in 在**结构化矩阵 + 可视化 Timeline + 澄清节点** —— 这是差异化护城河
+⚠️ GPT-Researcher 很成熟，工程量必须聚焦在它没做的事上：
+- 不重复造检索 + 长文生成轮子
+- All-in 在**结构化矩阵 + 事件流可视化 + 自主澄清 + 引用三道防线**
 
-⚠️ **不要试图"全面碾压"开源项目**：
-- 3 周时间不够
-- 目标是**在"竞品分析"这个垂直点上做得更深**
+⚠️ 不试图全面碾压开源项目，3 周不够。目标是**在"竞品分析"垂直点上做得更深**。

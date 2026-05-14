@@ -11,9 +11,10 @@
 - **今天日期**：2026-05-14
 - **当前阶段**：阶段 0 — 开工前准备（5/19 前完成）
 - **下一步要做**：
-  1. 用 Claude Code 跑 Cursor 竞品分析 + 按模板记录（最高优先级，学习+baseline 双产出）
-  2. 注册 Anthropic / Tavily / Serper key + 写 `.env.example`
+  1. 注册 Anthropic / Tavily / Serper key + 写 `.env.example`
+  2. 跑 Notion AI 竞品分析（skill v0.3 实战，复用 Cursor case 改进路径）
   3. 注册部署平台账号（Vercel / Render / Neon）
+- **最近完成**：Cursor 竞品分析 baseline + skill v0.2 实战验证（21 个工具调用，发现 6 处改进点）
 - **最近一次卡点**：（无）
 - **风险触发**：（无）
 
@@ -28,11 +29,12 @@
 - [x] 🔴 写 `prompts/lead_system.md` 草稿 v0（5 大纪律：流程/预算/引用/错误/收敛）
 - [x] 🔴 写 `prompts/researcher_system.md` 草稿 v0（含工具上限 + 返回 schema 示例）
 - [ ] 🔴 注册 Anthropic / Tavily / Serper API key，写入 `.env.example`
-- [ ] 🔴 **用 Claude Code 跑一次 Cursor 竞品分析**（按 [`cc-observation-cursor.md`](./cc-observation-cursor.md) 模板填写）
-  - 记录 tool 序列 / AskUserQuestion 时机 / 引用真实性 / 错误与调整
-  - 输出归档到 `data/fixtures/cursor/` + `skills/competitive-analysis/examples/cursor.md`
-  - 对照 `lead_system.md v0` 找缺漏，回写 v0.1
-  - 更新 `skills/competitive-analysis/SKILL.md` 到 v0.1，记入 CHANGELOG
+- [x] 🔴 **用 Claude Code 跑一次 Cursor 竞品分析**（已完成 2026-05-14）
+  - [x] 输出归档到 `data/fixtures/cursor/claude_code_baseline.md`
+  - [x] 案例笔记 `skills/competitive-analysis/examples/cursor.md`（含执行统计 + 6 处问题与启示）
+  - [x] CHANGELOG 加入 v0.3 待办（6 处改进点）
+  - [ ] **待人工**：引用真实性抽查 5 条事实
+  - [ ] **待人工**：把 v0.3 改进点应用到 SKILL.md / reference/
 - [ ] 🟡 clone GPT-Researcher 跑一次 Notion AI 调研，截图存档（另一种范式对照组）
 - [ ] 🟡 选定部署平台：前端 Vercel + 后端 Render + Neon PG，账号注册
 - [ ] 🟢 与队友（如有）对一次 prompt 草稿

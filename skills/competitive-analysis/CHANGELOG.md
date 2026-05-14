@@ -68,16 +68,22 @@
 
 ---
 
-## v0.3 · 计划 5/17
+## v0.3 · 待执行（5/15-5/17 修订）
 
-**触发**：Cursor case 跑完，按 `docs/cc-observation-cursor.md` 记录完毕
+**触发**：Cursor case 已跑通（[examples/cursor.md](./examples/cursor.md)），需根据观察更新 skill
 
-**预期修订**：
-- [ ] 引用真实性结果回写（量化幻觉率）
-- [ ] 实际工具调用次数与预设上限对比
-- [ ] 收敛纪律是否需要更具体的触发条件
-- [ ] 报告结构是否需要调整
-- [ ] description 触发覆盖度（CC 在用户没说完整关键词时是否触发）
+**实战发现的 6 处需改进**（来自 [examples/cursor.md](./examples/cursor.md#修订建议)）：
+1. **Tool 顺序调整**：playbook 改为"先 WebSearch 评估官网信息密度，再决定 fetch 几页"（Trae / Windsurf 官网内容稀薄，盲 fetch 浪费）
+2. **Reddit 不可 fetch**：disciplines.md 错误纪律加"Reddit 在 CC 中不可 fetch，差评走 G2 / Capterra / dev.to / The Register 等聚合站"
+3. **Redirect 处理**：错误纪律加"fetch 返回 redirect 时跟随新 URL，不算失败"
+4. **自由文本兜底**：playbook 第 2 步加"若用户用自由文本回答数量，LLM 自行解析为整数；解析失败用默认 5"
+5. **官方来源优先级修正**：实际是"**定价页 > 官网 > 评测站**"（Trae 官网空但评测站有完整定价）
+6. **新增"共性洞察"提示**：output-spec.md 加一行引导主 agent 主动寻找跨竞品共性（如"用量计费危机"这种横向观察）
+
+**待人工补：**
+- [ ] 引用真实性抽查（NVIDIA 4 万 / Ryz Labs 50% / Cline stars 等 5 条待验证事实）
+- [ ] 量化幻觉率到 CHANGELOG
+- [ ] description 触发覆盖度：本次没用真 skill auto-trigger（CC 内直接读 SKILL.md 执行），需到 `~/.claude/skills/` symlink 后再验证
 
 ---
 

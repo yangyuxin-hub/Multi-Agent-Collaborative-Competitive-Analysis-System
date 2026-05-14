@@ -11,9 +11,9 @@
 - **今天日期**：2026-05-14
 - **当前阶段**：阶段 0 — 开工前准备（5/19 前完成）
 - **下一步要做**：
-  1. 注册 Anthropic / Tavily / Serper key + 写 `.env.example`
-  2. 注册部署平台账号（Vercel / Render / Neon）
-  3. clone GPT-Researcher 跑一次 Notion AI 调研 + 截图
+  1. 用 Claude Code 跑 Cursor 竞品分析 + 按模板记录（最高优先级，学习+baseline 双产出）
+  2. 注册 Anthropic / Tavily / Serper key + 写 `.env.example`
+  3. 注册部署平台账号（Vercel / Render / Neon）
 - **最近一次卡点**：（无）
 - **风险触发**：（无）
 
@@ -28,7 +28,11 @@
 - [x] 🔴 写 `prompts/lead_system.md` 草稿 v0（5 大纪律：流程/预算/引用/错误/收敛）
 - [x] 🔴 写 `prompts/researcher_system.md` 草稿 v0（含工具上限 + 返回 schema 示例）
 - [ ] 🔴 注册 Anthropic / Tavily / Serper API key，写入 `.env.example`
-- [ ] 🟡 clone GPT-Researcher 跑通一次 Notion AI 调研，截图存档
+- [ ] 🔴 **用 Claude Code 跑一次 Cursor 竞品分析**（按 [`cc-observation-cursor.md`](./cc-observation-cursor.md) 模板填写）
+  - 记录 tool 序列 / AskUserQuestion 时机 / 引用真实性 / 错误与调整
+  - 输出归档到 `data/fixtures/cursor/`
+  - 对照 `lead_system.md v0` 找缺漏，回写 v0.1
+- [ ] 🟡 clone GPT-Researcher 跑一次 Notion AI 调研，截图存档（另一种范式对照组）
 - [ ] 🟡 选定部署平台：前端 Vercel + 后端 Render + Neon PG，账号注册
 - [ ] 🟢 与队友（如有）对一次 prompt 草稿
 

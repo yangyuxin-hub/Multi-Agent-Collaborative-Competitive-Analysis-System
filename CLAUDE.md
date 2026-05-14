@@ -11,7 +11,7 @@
 
 ## 开发执行原则（AI 写代码前必读）
 
-1. **Demo 链路优先**：所有改动必须服务于 Demo 主路径（输入 → 六 Agent → 报告 PDF），不偏离不发散
+1. **Demo 链路优先**：所有改动必须服务于 Demo 主路径（输入 → 澄清 → 6 Agent → 报告 PDF），不偏离不发散
 2. **不引入 V2 依赖**：禁止在 V1 阶段引入 Redis、ChromaDB、MinIO、Celery，本地文件 + PostgreSQL 足够
 3. **sources 强制贯穿**：任何 Agent 的输出必须带 `sources` 字段，未带源的结论不允许出现在最终报告
 4. **先 mock 后真实**：每个 Agent 先用 mock 数据跑通流程，再接真实 API。优先保证端到端链路打通
@@ -47,18 +47,51 @@
 
 ---
 
-## 六个核心 Agent
+## 6 核心 Agent + 2 辅助节点
 
-| Agent | 职责 | 超时 |
-|-------|------|------|
-| 任务规划 Agent | 理解用户需求，拆解任务：找哪些竞品、查哪些维度、报告结构 | 20s |
-| 信息采集 Agent | 从公开网页、官网、新闻、应用商店采集资料 | 90s |
-| 信息抽取 Agent | 非结构化文本 → 结构化字段（功能、价格、目标用户、融资、用户评价） | 60s |
-| 竞品对比 Agent | 横向比较多个产品，生成功能矩阵、价格矩阵、市场定位矩阵 | 45s |
-| 洞察分析 Agent | 总结优劣势机会威胁，输出 SWOT、商业模式分析 | 45s |
-| 报告生成 Agent | 汇总所有结果，生成 Markdown / PDF 报告 | 60s |
+### 核心 Agent（6 个）
 
-**执行顺序**：任务规划 → 信息采集 → 信息抽取 → 竞品对比 + 洞察分析（并行）→ 报告生成
+| Agent | 职责 | 模型 | 单次成本 | 超时 |
+|-------|------|------|--------|------|
+| 任务规划 planner | 理解用户需求，拆解任务、生成歧义点供澄清 | Sonnet 4.6 | ~$0.01 | 20s |
+| 信息采集 collector | 从公开网页、官网、新闻、应用商店采集资料 | 无 LLM（Tavily + BS4）| $0 | 90s |
+| 信息抽取 extractor | 非结构化文本 → 结构化字段（功能/价格/目标用户/融资/口碑）| **Haiku 4.5** | ~$0.01（并发 25）| 60s |
+| 竞品对比 comparator | 横向对比，生成功能矩阵、价格矩阵、定位象限 | Sonnet 4.6 | ~$0.005 | 45s |
+| 洞察分析 analyzer | SWOT、商业模式、护城河、趋势判断 | Sonnet 4.6 | ~$0.005 | 45s |
+| 报告生成 reporter | 汇总 Markdown / PDF 报告 | Sonnet 4.6 | ~$0.01 | 60s |
+
+### 辅助节点（2 个，v1-optimization-plan 决策）
+
+| 节点 | 触发位置 | 作用 | 模型 |
+|------|---------|------|------|
+| clarifier | planner 之后**一次** | LangGraph `interrupt` → 前端多选卡片，对齐竞品范围/视角/地域 | Sonnet 4.6（~$0.005）|
+| gap_filler | reporter 子循环 ≤1 次 | 检测到无 source 的结论时，定向补抓 + 重写段落 | Sonnet 4.6 |
+
+### 执行顺序
+
+```
+START → planner → clarifier ──interrupt(前端多选)──┐
+                              ↓
+                          collector ←──(质量门, ≤1 次重试)
+                              ↓
+                          extractor ←──(质量门, ≤1 次重试)
+                              ↓
+                      ┌───────┴───────┐  (并行)
+                  comparator       analyzer
+                      └───────┬───────┘
+                              ↓
+                          reporter ←──(缺 source → gap_filler, ≤1 次)
+                              ↓
+                             END
+```
+
+### 三个质量门 + 硬超时
+
+- **collector_gate**：采集文档 < 3 篇且未重试过 → 换 query 重跑 collector
+- **extractor_gate**：结构化字段缺失率 > 50% 且未重试过 → 回 collector 定向补抓
+- **reporter_gate**：报告含无引用结论 → 进 gap_filler 一次
+
+**端到端预算**：单次任务 ≤ **$0.05**、happy path ≤ **90 秒**；硬超时 **8 分钟**，超限用已采集数据降级出简化报告。
 
 ### Agent 统一输出 Schema
 
@@ -102,9 +135,10 @@
 ### 后端
 - **框架**：Python FastAPI
 - **Agent 编排**：LangGraph（有状态多步骤工作流）
-- **LLM**：Anthropic Claude API
-  - 主力：`claude-sonnet-4-6`（规划、对比、分析、报告）
-  - 轻任务：`claude-haiku-4-5`（抽取类）
+- **LLM**：Anthropic Claude API（模型分层见上方 Agent 表）
+  - 主力：`claude-sonnet-4-6`（planner / clarifier / comparator / analyzer / reporter / gap_filler）
+  - 抽取类：`claude-haiku-4-5`（extractor，单页一次 Haiku，`asyncio.gather` 并发）
+  - **Prompt Caching**：planner / reporter 固定框架部分用 `cache_control`
 - **搜索**：Tavily API（主）+ Serper API（兜底）+ BeautifulSoup 网页解析
 - **PDF 生成**：WeasyPrint（Markdown → HTML → PDF）
 
@@ -135,6 +169,14 @@
 |------|------|
 | `WS /ws/tasks/{task_id}` | 订阅指定任务的 Agent 执行进度，推送 Agent 统一输出 Schema |
 
+**WS 事件类型**：
+- `agent_status`：Agent 状态变更（推送统一 Schema）
+- `interrupt`：clarifier 触发，payload 含多选项，前端弹卡片
+- `resume`：前端 → 后端，提交澄清答案，graph 用 `Command(resume=...)` 继续
+- `done` / `failed`：任务终态
+
+**clarifier 兜底**：前端 30 秒未提交 → 用默认选项自动 resume，保证 Demo 不卡。
+
 ---
 
 ## 项目结构
@@ -147,12 +189,14 @@ ai-product/
 │   │   ├── agents/
 │   │   │   ├── base.py           # Agent 基类，统一 Schema
 │   │   │   ├── planner.py
+│   │   │   ├── clarifier.py      # 澄清节点（interrupt）
 │   │   │   ├── collector.py
 │   │   │   ├── extractor.py
 │   │   │   ├── comparator.py
 │   │   │   ├── analyzer.py
-│   │   │   └── reporter.py
-│   │   ├── graph/            # LangGraph 工作流编排
+│   │   │   ├── reporter.py
+│   │   │   └── gap_filler.py     # reporter 子循环
+│   │   ├── graph/            # LangGraph 工作流编排 + 质量门
 │   │   ├── tools/            # 搜索、抓取、引用追踪
 │   │   ├── models/           # Pydantic + SQLAlchemy
 │   │   ├── mocks/            # mock 数据，先 mock 后真实
@@ -244,7 +288,8 @@ cd backend && uv run pytest tests/e2e/ -v
 - 抓取公开网页内容
 - 竞品对比表（功能、定价、目标用户）
 - Markdown 报告 + PDF 导出
-- **六个 Agent 执行流程实时可视化**（核心 Demo 卖点）
+- **6 Agent + 澄清节点的执行流程实时可视化**（核心 Demo 卖点）
+- **planner 后一次多选澄清**（人机协同，避免跑偏）
 - **报告每条结论绑定来源链接**（核心创新点）
 
 ---
@@ -264,11 +309,12 @@ cd backend && uv run pytest tests/e2e/ -v
 
 | 评分维度 | 创新点 | 落地实现 |
 |---------|--------|---------|
-| 技术创新 | **多 Agent 协作机制** | LangGraph 编排 6 个角色，并行执行，模拟真实调研团队 |
-| 完成度 | **端到端自动化** | 一句话输入 → 完整 PDF 报告输出 |
-| 可信度 | **可追溯信息来源** | 每条结论悬浮显示原始链接，解决 LLM 幻觉 |
+| 技术创新 | **多 Agent DAG 编排** | LangGraph 显式图 + 三个质量门 + 子循环，相比 ReAct 黑盒可视化、可控、可降级 |
+| 人机协同 | **planner 后意图澄清** | 借鉴 Claude Code `AskUserQuestion`，interrupt/resume 多选卡片，避免"两万字报告跑偏" |
+| 完成度 | **端到端自动化** | 一句话输入 → 完整 PDF 报告输出，目标 90s / $0.05 |
+| 可信度 | **可追溯信息来源** | 每条结论悬浮显示原始链接 + reporter 缺源子循环，解决 LLM 幻觉 |
 | 商业价值 | **决策导向分析框架** | 内置 SWOT、功能矩阵、定价矩阵，非纯信息汇总 |
-| 体验 | **Agent 过程可视化** | 实时动画展示六个 Agent 工作流，不是黑盒 |
+| 体验 | **Agent 过程可视化** | Timeline 动画展示 6 Agent + 澄清/重试边，不是黑盒 spinner |
 
 ---
 
@@ -322,9 +368,9 @@ DATA_DIR=./data
 | 日期 | 目标 | 验收标准 |
 |------|------|---------|
 | 5月20日 | 项目启动 | FastAPI + PostgreSQL + WebSocket 骨架 + Next.js 空壳，三个 case fixture 就位 |
-| 5月23日 | 数据链路打通 | 任务规划 + 信息采集 + 信息抽取 跑通，能输出结构化 JSON（带 sources） |
-| 5月27日 | 六个 Agent 全通 | 端到端能生成粗糙的 Markdown 报告，三个 case 都能跑完 |
-| 5月31日 | 前端可视化完成 | Agent Timeline 动画 + 报告渲染 + 引用悬浮 |
+| 5月23日 | 数据链路打通 | planner + clarifier(interrupt) + collector + extractor 跑通，输出结构化 JSON（带 sources） |
+| 5月27日 | 6 Agent + 辅助节点全通 | 端到端能生成粗糙 Markdown 报告，三个 case 都能跑完，质量门 + gap_filler 生效 |
+| 5月31日 | 前端可视化完成 | Agent Timeline 动画 + 澄清卡片 + 报告渲染 + 引用悬浮 |
 | 6月3日 | 报告质量达标 | prompt 调优完毕，三个测试 case 报告质量可用 |
 | 6月5日 | PDF + Demo 数据 | PDF 导出能用，三个预跑 case 缓存就绪 |
 | 6月7日 | 功能冻结 | 只修 bug，专注答辩 PPT + 演示视频 |
@@ -335,11 +381,12 @@ DATA_DIR=./data
 ## Demo 设计（答辩用）
 
 **主演示脚本**：输入"帮我分析 Notion AI 的竞品"
-1. 实时展示六个 Agent 依次激活、执行、完成的动画
-2. 中途点击采集卡片，展示原始信息源（链接 + 摘要）
-3. 展示竞品对比表（功能矩阵、定价矩阵），可交互筛选
-4. 展示最终报告，**结论上悬浮显示来源引用**
-5. 一键导出 PDF
+1. planner 激活，**弹出澄清卡片**：竞品范围 / 分析视角 / 地域，用户多选确认
+2. 实时展示 collector → extractor → comparator‖analyzer → reporter 依次激活、执行、完成
+3. 中途点击采集卡片，展示原始信息源（链接 + 摘要）
+4. 展示竞品对比表（功能矩阵、定价矩阵），可交互筛选
+5. 展示最终报告，**结论上悬浮显示来源引用**
+6. 一键导出 PDF
 
 **追问演示**：切换"Cursor 的竞品" / "Linear 的竞品"，展示系统通用性
 

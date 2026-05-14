@@ -116,18 +116,19 @@
 <div class="container">
   <header>
     <h1>多 Agent 协作式竞品分析系统</h1>
-    <div class="subtitle">系统架构图 · 字节 AI 全栈挑战赛参赛项目（2026.05.20 - 2026.06.10）</div>
+    <div class="subtitle">系统架构图 · 字节 AI 全栈挑战赛参赛项目（2026.05.20 - 2026.06.10）· 与 v1-optimization-plan 同步</div>
   </header>
 
   <nav>
     <h3>📋 目录</h3>
     <ul>
       <li><a href="#fig1">① 整体分层架构</a></li>
-      <li><a href="#fig2">② Agent 工作流时序</a></li>
+      <li><a href="#fig2">② Agent 工作流（DAG + 质量门 + 子循环）</a></li>
       <li><a href="#fig3">③ 数据流与引用追踪</a></li>
       <li><a href="#fig4">④ Agent 统一输出 Schema</a></li>
       <li><a href="#fig5">⑤ 创新点对照视图</a></li>
-      <li><a href="#fig6">⑥ 部署架构</a></li>
+      <li><a href="#fig6">⑥ State 与上下文工程</a></li>
+      <li><a href="#fig7">⑦ 部署架构</a></li>
     </ul>
   </nav>
 
@@ -152,13 +153,15 @@ graph TB
     subgraph Orchestration["🧠 编排层 LangGraph"]
         GRAPH[工作流引擎<br/>状态机 + 并行调度]
     end
-    subgraph Agents["🤖 Agent 层"]
-        A1[任务规划]
-        A2[信息采集]
-        A3[信息抽取]
-        A4[竞品对比]
-        A5[洞察分析]
-        A6[报告生成]
+    subgraph Agents["🤖 Agent 层（6 核心 + 2 辅助）"]
+        A1[任务规划 planner]
+        AC[澄清 clarifier<br/>⚡ interrupt]
+        A2[信息采集 collector]
+        A3[信息抽取 extractor<br/>Haiku 并发]
+        A4[竞品对比 comparator]
+        A5[洞察分析 analyzer]
+        A6[报告生成 reporter]
+        AG[缺源补抓 gap_filler<br/>↻ 子循环]
     end
     subgraph Tools["🛠️ 工具层"]
         T1[Tavily 搜索]
@@ -175,12 +178,15 @@ graph TB
     TI --> REST
     REST --> GRAPH
     GRAPH --> A1
+    GRAPH --> AC
     GRAPH --> A2
     GRAPH --> A3
     GRAPH --> A4
     GRAPH --> A5
     GRAPH --> A6
+    GRAPH --> AG
     A1 --> T4
+    AC --> T4
     A2 --> T1
     A2 --> T2
     A2 --> T3
@@ -188,6 +194,7 @@ graph TB
     A4 --> T4
     A5 --> T4
     A6 --> T4
+    AG --> T4
     A6 --> T5
     GRAPH --> DB
     A6 --> FS
@@ -206,20 +213,34 @@ graph TB
   </section>
 
   <section id="fig2">
-    <h2><span class="num">2</span>Agent 工作流时序</h2>
-    <div class="desc">六个 Agent 串/并行执行关系，含每个超时数字。竞品对比 + 洞察分析并行执行。</div>
+    <h2><span class="num">2</span>Agent 工作流（DAG + 质量门 + 子循环）</h2>
+    <div class="desc">planner 后 clarifier interrupt 多选澄清；collector / extractor 各一次有界返工；reporter 缺 source 进 gap_filler 子循环。预算：happy path ≤ 90s / ≤ $0.05，硬超时 8 min。</div>
     <div class="mermaid">
-flowchart LR
-    START([用户输入<br/>产品名]) --> P[任务规划 Agent<br/>20s]
-    P --> C[信息采集 Agent<br/>90s]
-    C --> E[信息抽取 Agent<br/>60s]
-    E --> COMP[竞品对比 Agent<br/>45s]
-    E --> ANA[洞察分析 Agent<br/>45s]
-    COMP --> R[报告生成 Agent<br/>60s]
+flowchart TB
+    START([用户输入<br/>产品名]) --> P[任务规划 planner<br/>Sonnet · 20s]
+    P --> CL{澄清 clarifier<br/>⚡ interrupt}
+    CL -.30s 超时默认.-> C
+    CL -- 前端多选 resume --> C[信息采集 collector<br/>无 LLM · 90s]
+    C --> G1{collector_gate<br/>文档数 ≥ 3?}
+    G1 -- 否 ≤1 次 --> C
+    G1 -- 是 --> E[信息抽取 extractor<br/>Haiku 并发 · 60s]
+    E --> G2{extractor_gate<br/>缺失率 ≤ 50%?}
+    G2 -- 否 ≤1 次 --> C
+    G2 -- 是 --> COMP[竞品对比 comparator<br/>Sonnet · 45s]
+    G2 -- 是 --> ANA[洞察分析 analyzer<br/>Sonnet · 45s]
+    COMP --> R[报告生成 reporter<br/>Sonnet · 60s]
     ANA --> R
-    R --> END([Markdown + PDF<br/>含引用])
+    R --> G3{reporter_gate<br/>结论都有 source?}
+    G3 -- 否 ≤1 次 --> GF[gap_filler<br/>定向补抓 + 重写]
+    GF --> R
+    G3 -- 是 --> ENDX([Markdown + PDF<br/>含引用])
     style START fill:#4caf50,color:#fff
-    style END fill:#2196f3,color:#fff
+    style ENDX fill:#2196f3,color:#fff
+    style CL fill:#ffccbc
+    style GF fill:#ffccbc
+    style G1 fill:#fff59d
+    style G2 fill:#fff59d
+    style G3 fill:#fff59d
     style P fill:#fff9c4
     style C fill:#fff9c4
     style E fill:#fff9c4
@@ -248,15 +269,27 @@ sequenceDiagram
     API-->>F: 返回 task_id
     F->>API: WS /ws/tasks/{id} 订阅
     API->>G: 启动工作流
-    loop 每个 Agent
+    G->>A: planner 执行
+    A-->>G: 返回计划 + 歧义点
+    G-->>API: agent_status (planner done)
+    API-->>F: WS 推送
+    Note over G,F: 澄清节点 interrupt
+    G-->>API: interrupt (多选项)
+    API-->>F: WS interrupt 事件
+    F->>U: 弹出澄清卡片
+    U->>F: 多选确认 / 30s 超时默认
+    F->>API: WS resume (用户选择)
+    API->>G: Command(resume=...)
+    loop collector/extractor/comparator/analyzer/reporter
         G->>A: 执行 Agent
-        A->>T: 调用工具<br/>(搜索/LLM)
-        T-->>A: 返回数据 + sources
+        A->>T: 调用工具 (搜索/LLM)
+        T-->>A: 数据 + sources (snippet ≤200 字)
         A->>DB: 持久化输出 + sources
-        A-->>G: 返回统一 Schema
-        G-->>API: 状态更新
+        A-->>G: 统一 Schema
+        G-->>API: agent_status
         API-->>F: WS 推送进度
     end
+    Note over G: reporter_gate 若缺 source → gap_filler 子循环 ≤1 次
     G->>API: 工作流完成
     API->>DB: 生成最终报告
     F->>API: GET /api/reports/{id}
@@ -302,30 +335,73 @@ classDiagram
 mindmap
   root((竞品分析<br/>Agent系统))
     技术创新
-      多Agent协作机制
-      LangGraph编排
-      并行执行
+      LangGraph DAG 显式编排
+      6 Agent + 2 辅助节点
+      并行 comparator/analyzer
+      三个质量门 + 子循环
+    人机协同
+      planner 后 clarifier interrupt
+      多选卡片对齐意图
+      30s 超时默认兜底
     可信度
-      sources全链路透传
-      结论绑定来源
-      解决LLM幻觉
-    完成度
-      端到端自动化
-      一句话输入
-      PDF报告输出
+      sources 全链路透传
+      snippet 限长 200 字
+      gap_filler 缺源回填
+      结论悬浮显示来源
+    工程优化
+      State 分层 raw 落盘
+      模型分层 Sonnet/Haiku
+      Prompt Caching
+      单次 0.05 美元 90 秒
     商业价值
-      SWOT分析
+      SWOT 分析
       功能矩阵
       定价矩阵
+      多视角字段权重
     体验
-      Agent过程可视化
-      实时进度推送
-      引用悬浮展示
+      Timeline 动画
+      实时澄清交互
+      引用悬浮
+      PDF 一键导出
     </div>
   </section>
 
   <section id="fig6">
-    <h2><span class="num">6</span>部署架构</h2>
+    <h2><span class="num">6</span>State 与上下文工程</h2>
+    <div class="desc">铁律：&gt;1K 原始内容一律落盘，State 只存路径；每个 Agent 显式声明读哪些字段，不接受整 State。sources snippet 限长 200 字。</div>
+    <div class="mermaid">
+graph LR
+    subgraph State["AnalysisState（瘦身版，进 LangGraph）"]
+        S1[product / clarifications]
+        S2[plan_draft / competitors]
+        S3[raw_doc_refs<br/>路径，不是内容]
+        S4[structured 精简 JSON]
+        S5[comparison / insights]
+        S6[report_md]
+        S7[sources<br/>snippet ≤ 200 字]
+        S8[retries / quality_flags]
+    end
+    subgraph Disk["./data/snapshots/{task_id}/ (磁盘)"]
+        D1[原始 HTML / Markdown]
+        D2[抓取截图]
+    end
+    subgraph DBSub[("PostgreSQL")]
+        T1[tasks 表]
+        T2[sources 表]
+        T3[reports 表]
+    end
+    S3 -. 引用路径 .-> D1
+    S7 -. 落库 .-> T2
+    S6 -. 落库 .-> T3
+    S1 -. 落库 .-> T1
+    style State fill:#e3f2fd
+    style Disk fill:#f5f5f5
+    style DBSub fill:#fff3e0
+    </div>
+  </section>
+
+  <section id="fig7">
+    <h2><span class="num">7</span>部署架构</h2>
     <div class="desc">本地开发环境 + 外部服务。MVP 阶段不引入 Redis / MinIO / 向量库。</div>
     <div class="mermaid">
 graph LR

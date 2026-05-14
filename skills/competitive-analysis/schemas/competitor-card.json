@@ -3,9 +3,19 @@
   "title": "CompetitorCard",
   "description": "单个竞品调研产出的结构化卡片。每个 case 跑完后用此 schema 校验完整度。",
   "type": "object",
-  "required": ["competitor", "company", "website", "one_liner", "core_features", "pricing_tiers", "sources"],
+  "required": [
+    "name",
+    "company",
+    "website",
+    "one_liner",
+    "core_features",
+    "pricing_tiers",
+    "positive_reviews",
+    "negative_reviews",
+    "sources"
+  ],
   "properties": {
-    "competitor": { "type": "string", "description": "竞品名" },
+    "name": { "type": "string", "description": "竞品名" },
     "company": { "type": ["string", "null"] },
     "website": { "type": "string", "format": "uri" },
     "one_liner": { "type": "string", "description": "一句话定位" },
@@ -25,9 +35,9 @@
       "type": "object",
       "additionalProperties": {
         "type": "string",
-        "enum": ["full", "partial", "none"]
+        "enum": ["full", "partial", "none", "unknown"]
       },
-      "description": "用于功能矩阵的标准化能力标记"
+      "description": "用于功能矩阵的标准化能力标记；信息缺失用 unknown 而非 none"
     },
     "platforms": { "type": "array", "items": { "type": "string" } },
     "integrations": { "type": "array", "items": { "type": "string" } },
@@ -36,11 +46,12 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["name", "price"],
+        "required": ["name", "price", "limits", "source_url"],
         "properties": {
           "name": { "type": "string", "description": "如 Free / Pro / Enterprise" },
-          "price": { "type": ["string", "null"], "description": "如 '$10/user/mo' 或 'Contact sales'" },
-          "limits": { "type": ["string", "null"] }
+          "price": { "type": "string", "description": "如 '$10/user/mo' / 'Contact sales' / '未公开'" },
+          "limits": { "type": "string", "description": "如 '5 users max' / null 时填 '未公开'" },
+          "source_url": { "type": "string", "format": "uri", "description": "该套餐价格的引用 URL，最好是官网 pricing 页" }
         }
       }
     },
@@ -49,22 +60,26 @@
     "funding": {
       "type": ["object", "null"],
       "properties": {
-        "total": { "type": ["string", "null"] },
-        "latest_round": { "type": ["string", "null"] },
-        "year": { "type": ["integer", "null"] }
+        "amount": { "type": ["string", "null"], "description": "如 '$140M total'" },
+        "round": { "type": ["string", "null"], "description": "如 'Series D'" },
+        "date": { "type": ["string", "null"] },
+        "source_url": { "type": ["string", "null"], "format": "uri" }
       }
     },
-    "notable_customers": { "type": "array", "items": { "type": "string" } },
+    "notable_customers": {
+      "type": ["array", "null"],
+      "items": { "type": "string" }
+    },
 
     "positive_reviews": {
       "type": "array",
       "items": { "type": "string" },
-      "description": "用户好评关键点"
+      "description": "用户好评关键点，不能为空"
     },
     "negative_reviews": {
       "type": "array",
       "items": { "type": "string" },
-      "description": "用户差评 / 痛点（重要，机会所在）"
+      "description": "用户差评 / 痛点（机会所在）；若评价不足必须显式声明 'review_insufficient'"
     },
     "growth_signals": {
       "type": "array",
@@ -76,7 +91,7 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["url", "title", "fetched_at"],
+        "required": ["url", "title", "used_for"],
         "properties": {
           "url": { "type": "string", "format": "uri" },
           "title": { "type": "string" },
@@ -86,11 +101,16 @@
             "type": "string",
             "enum": ["official_page", "pricing", "blog", "review_site", "social", "news", "other"]
           },
-          "snippet": { "type": ["string", "null"], "maxLength": 500 }
+          "snippet": { "type": ["string", "null"], "maxLength": 500 },
+          "used_for": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "本来源被用于哪些字段，如 ['pricing', 'feature_matrix', 'negative_reviews']"
+          }
         }
       },
-      "minItems": 1,
-      "description": "至少 1 个引用，每个 source 必须真实可访问"
+      "minItems": 2,
+      "description": "每个竞品至少 2 个来源，其中至少 1 个 type=official_page 或 pricing"
     },
 
     "gaps": {

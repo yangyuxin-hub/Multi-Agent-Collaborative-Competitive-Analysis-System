@@ -30,8 +30,9 @@
 - [ ] 🔴 注册 Anthropic / Tavily / Serper API key，写入 `.env.example`
 - [ ] 🔴 **用 Claude Code 跑一次 Cursor 竞品分析**（按 [`cc-observation-cursor.md`](./cc-observation-cursor.md) 模板填写）
   - 记录 tool 序列 / AskUserQuestion 时机 / 引用真实性 / 错误与调整
-  - 输出归档到 `data/fixtures/cursor/`
+  - 输出归档到 `data/fixtures/cursor/` + `skills/competitive-analysis/examples/cursor.md`
   - 对照 `lead_system.md v0` 找缺漏，回写 v0.1
+  - 更新 `skills/competitive-analysis/SKILL.md` 到 v0.1，记入 CHANGELOG
 - [ ] 🟡 clone GPT-Researcher 跑一次 Notion AI 调研，截图存档（另一种范式对照组）
 - [ ] 🟡 选定部署平台：前端 Vercel + 后端 Render + Neon PG，账号注册
 - [ ] 🟢 与队友（如有）对一次 prompt 草稿

@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CompetitorCard",
+  "description": "单个竞品调研产出的结构化卡片。每个 case 跑完后用此 schema 校验完整度。",
+  "type": "object",
+  "required": ["competitor", "company", "website", "one_liner", "core_features", "pricing_tiers", "sources"],
+  "properties": {
+    "competitor": { "type": "string", "description": "竞品名" },
+    "company": { "type": ["string", "null"] },
+    "website": { "type": "string", "format": "uri" },
+    "one_liner": { "type": "string", "description": "一句话定位" },
+
+    "founded": { "type": ["string", "null"], "description": "成立年份" },
+    "headquarters": { "type": ["string", "null"] },
+    "team_size": { "type": ["string", "null"], "description": "如 '50-200'" },
+
+    "core_features": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 3,
+      "maxItems": 8,
+      "description": "3-8 个杀手锏功能"
+    },
+    "feature_flags": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "enum": ["full", "partial", "none"]
+      },
+      "description": "用于功能矩阵的标准化能力标记"
+    },
+    "platforms": { "type": "array", "items": { "type": "string" } },
+    "integrations": { "type": "array", "items": { "type": "string" } },
+
+    "pricing_tiers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "price"],
+        "properties": {
+          "name": { "type": "string", "description": "如 Free / Pro / Enterprise" },
+          "price": { "type": ["string", "null"], "description": "如 '$10/user/mo' 或 'Contact sales'" },
+          "limits": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "business_model": { "type": ["string", "null"] },
+    "target_audience": { "type": "array", "items": { "type": "string" } },
+    "funding": {
+      "type": ["object", "null"],
+      "properties": {
+        "total": { "type": ["string", "null"] },
+        "latest_round": { "type": ["string", "null"] },
+        "year": { "type": ["integer", "null"] }
+      }
+    },
+    "notable_customers": { "type": "array", "items": { "type": "string" } },
+
+    "positive_reviews": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "用户好评关键点"
+    },
+    "negative_reviews": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "用户差评 / 痛点（重要，机会所在）"
+    },
+    "growth_signals": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "招聘 / 社区活跃 / Google Trends 等增长信号"
+    },
+
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["url", "title", "fetched_at"],
+        "properties": {
+          "url": { "type": "string", "format": "uri" },
+          "title": { "type": "string" },
+          "publisher": { "type": ["string", "null"] },
+          "fetched_at": { "type": "string", "format": "date-time" },
+          "type": {
+            "type": "string",
+            "enum": ["official_page", "pricing", "blog", "review_site", "social", "news", "other"]
+          },
+          "snippet": { "type": ["string", "null"], "maxLength": 500 }
+        }
+      },
+      "minItems": 1,
+      "description": "至少 1 个引用，每个 source 必须真实可访问"
+    },
+
+    "gaps": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "未能获取或时效存疑的字段，让综合 agent 知道"
+    }
+  }
+}

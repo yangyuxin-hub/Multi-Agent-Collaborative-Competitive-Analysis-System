@@ -47,15 +47,37 @@
 
 ---
 
-## v0.2 · 计划 5/17
+## v0.2 · 2026-05-14（按 obra/superpowers 规范重构）
+
+**状态**：格式合规版，结构按 CC skill 事实标准对齐
+
+**核心修改**：
+1. **frontmatter 规范化**：
+   - `description` 改为 `Use when...` 开头，**仅描述触发条件**（不再总结工作流），符合 obra 规范
+   - 移除 `version` 字段（不在规范内；版本号由 CHANGELOG 维护）
+2. **body 结构按 obra 模板**：Overview / When to Use / Workflow / Disciplines / Quick Reference / Common Mistakes / Acceptance / Reference / Examples
+3. **拆分重型内容到 reference/**：
+   - `reference/playbook.md` — 5 步工作流详细
+   - `reference/disciplines.md` — 五大纪律完整版
+   - `reference/output-spec.md` — 报告 7 段细节 + 验收 + Source 结构
+   - `reference/integration.md` — 与本项目 agent 系统对接（开发者参考）
+4. **SKILL.md 精简到 ~500 词**，触发时 CC 全文读完即可知道结构与约束；细节按需读 reference/
+5. **新增 Common Mistakes 段**：6 条易错点 + 修正
+
+**未变**：5 步工作流、五大纪律、报告 7 段、competitor-card.json schema
+
+---
+
+## v0.3 · 计划 5/17
 
 **触发**：Cursor case 跑完，按 `docs/cc-observation-cursor.md` 记录完毕
 
 **预期修订**：
-- [ ] 引用真实性结果回写
+- [ ] 引用真实性结果回写（量化幻觉率）
 - [ ] 实际工具调用次数与预设上限对比
 - [ ] 收敛纪律是否需要更具体的触发条件
 - [ ] 报告结构是否需要调整
+- [ ] description 触发覆盖度（CC 在用户没说完整关键词时是否触发）
 
 ---
 

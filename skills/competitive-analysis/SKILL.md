@@ -1,215 +1,105 @@
 ---
 name: competitive-analysis
-description: 给定产品名，自主完成竞品调研并产出结构化报告（功能矩阵 + 定价矩阵 + SWOT + 战略建议），关键事实强制带引用来源。当用户说"做 X 的竞品分析"、"分析 X 的竞品"、"X 有哪些对手"等场景时触发。
-version: v0.1
+description: Use when the user asks for competitive analysis of a specific product, company, or industry. Triggers include "做 X 的竞品分析", "分析 X 的竞品", "X 的对手 / 替代品", "X vs Y 对比", "X 有哪些竞争对手". Not for single-product feature reviews, user research, or product roadmap planning.
 ---
 
-# Competitive Analysis Skill
+# Competitive Analysis
 
-> 主 Agent 范式的竞品分析方法论。
-> **双重身份**：① Claude Code 中可直接调用的 skill ② 本项目 agent 设计的活的规范文档。
-> 迭代历史见 [CHANGELOG.md](./CHANGELOG.md)。
+## Overview
 
----
+给定一个产品名，调研其直接竞品并产出**结构化、可决策、关键事实必带引用**的对比报告。核心原则：**结构化 > 叙述长文，引用真实 > 看起来完整**。
 
-## 何时触发
+## When to Use
 
-- "做 X 的竞品分析" / "分析 X 的竞品"
-- "X 有哪些对手 / 替代品"
-- "X 在 {赛道} 里的定位"
-- "对比 X 和 {竞品1, 竞品2}"（已知部分竞品）
+**适用症状**
+- 用户输入一个产品 / 公司 / 行业关键词，想知道"对手是谁、强弱在哪、怎么打"
+- 需要功能矩阵 / 定价矩阵 / SWOT / 战略建议这类**决策导向**的输出
+- 报告需要可溯源（每条事实能追到原始 URL）
 
-**不触发**：单产品功能介绍、用户调研、产品规划（不是竞品分析）
+**不适用**
+- 单产品的功能介绍（用户没问对比）
+- 用户调研 / 产品规划 / 用户访谈
+- 实时监控竞品动态（这是周期任务，本 skill 是一次性深度调研）
 
----
+## Workflow
 
-## 工作流（5 步）
+5 步流程，详见 [reference/playbook.md](./reference/playbook.md)：
 
-### 1. 规划（内部 think，≤ 30 秒）
-- 判断产品所属赛道
-- 列出 5-8 个候选竞品（用先验知识 + 准备搜证实）
+1. **规划** — 内部 think，列出 5-8 个候选竞品（≤ 30 秒）
+2. **澄清** — `AskUserQuestion` 问视角 / 地域 / 数量（30s 超时用默认值 + 报告头声明）
+3. **找候选** — `WebSearch` 1-2 次验证 + 补全候选名单
+4. **单竞品调研** — 对每个竞品独立调研（建议 `Task` 子 agent 隔离上下文），收集 [competitor-card](./schemas/competitor-card.json) 字段
+5. **综合 + 写报告** — 按 [reference/output-spec.md](./reference/output-spec.md) 7 段结构产出
 
-### 2. 澄清（默认一次，可自动兜底）
+## Five Disciplines（违反即失败）
 
-用 `AskUserQuestion`（或同等机制）一次性提问三件事：
+| # | 纪律 | 关键约束 |
+|---|------|---------|
+| 1 | 流程 | 第一步必澄清；找到候选立即调研，不再扩展 |
+| 2 | 预算 | 工具调用 ≤ 30 次；时间过半必须开始综合 |
+| 3 | 引用 | **事实必有 URL，分析判断基于事实**；禁构造 URL |
+| 4 | 错误 | 失败换路而非重试同输入；连续 2 次失败标 `null` |
+| 5 | 收敛 | 综合阶段禁扩竞品；补搜关键字段 ≤ 3 次 |
 
-| 问题 | 选项 | 默认 |
-|------|------|------|
-| 报告视角？ | PM / 创业者 / 投资人 / 销售 / 求职研究 | PM |
-| 地域焦点？ | 全球 / 国内 / 海外 / 自定义 | 全球 |
-| 竞品数量？ | 3 / 5 / 7 | 5 |
+完整版见 [reference/disciplines.md](./reference/disciplines.md)。
 
-若用户未回复、30 秒超时、或明确要求"直接开始" → **使用默认值继续执行**，并在报告开头**显式声明默认假设**（如"按 PM 视角 / 全球市场 / 5 个竞品默认假设产出"）。
+## Quick Reference
 
-不要为细节追问；澄清只用于范围对齐。
-
-### 3. 找候选 + 派调研
-
-- WebSearch 1-2 次（"X alternatives" / "X competitors {year}"）找补 + 验证候选名单
-- 选定 N 个竞品后，**并发**对每个竞品做调研（Task 子 agent 或顺序处理均可，但要保持隔离）
-
-### 4. 单竞品调研（每个竞品独立）
-
-参考 [`schemas/competitor-card.json`](./schemas/competitor-card.json) 收集这些字段：
-
-- **身份**：name / company / website / one_liner / founded / headquarters / team_size
-- **产品**：core_features / feature_flags / platforms / integrations
-- **商业**：pricing_tiers / business_model / target_audience / funding / notable_customers
-- **口碑**：positive_reviews / negative_reviews / growth_signals
-
-**信息源优先级**：官网 > 评测站（G2/Capterra） > Reddit / HN > 新闻
-**单竞品工具上限**：WebSearch ≤ 3、WebFetch ≤ 5
-
-### 5. 综合 + 写报告（按以下结构）
-
-1. **执行摘要** — 3-5 句话总结竞品格局
-2. **竞品概览表** — 产品 / 公司 / 定位 / 目标用户
-3. **功能矩阵** — ✅ 完整 / ⚠️ 部分 / ❌ 不支持
-4. **定价矩阵** — 免费版 / 个人 / 团队 / 企业
-5. **用户痛点对比表** — 好评 + 差评
-6. **SWOT** — 仅针对**目标产品**（不是所有竞品）
-7. **战略建议** — 3-5 条可执行建议
-
----
-
-## 五大纪律（违反即任务失败）
-
-### 1. 流程纪律
-- 第一步必须澄清，**不许跳过**
-- 找到 N 个竞品后立即开始调研，**不要继续探索**
-- 综合阶段**不再补搜**（除非某竞品的关键字段全缺）
-
-### 2. 预算纪律
-- 默认预算：$0.05 / 90 秒（参考值，CC 中实际看模型）
-- 总工具调用数硬上限：30 次
-- 时间过半时必须开始综合，**不要陷入完美主义**
-
-### 3. 引用纪律 ⭐
-
-**分两类对待**：
-
-- **事实信息**（产品定位 / 功能 / 价格 / 融资 / 客户 / 评价 / 团队规模等）→ **必须有真实访问过的 URL 作为依据**
-- **分析结论**（SWOT / 差异化判断 / 战略建议 / 定位象限等）→ 不需要每句独立来源，但**必须基于前文已引用的事实**，不可凭空判断
-
-**通用约束**：
-- 禁止凭空构造 URL / 编造引用
-- 报告中事实信息后标注来源（如 `[github.com/features/copilot]` 或注脚）
-- 事实无来源支撑 → 删除或改为"信息不足，建议进一步调研"
-- 来源无法确认时写"信息不足"，不要猜测
-
-### 4. 错误纪律
-- WebFetch 失败 → 换 URL 而非重试同一个
-- 同竞品同字段连续 2 次抓不到 → 标 `null` 跳过
-- 整个竞品调研失败 → 在报告中显式声明"X 信息不足"
-
-### 5. 收敛纪律
-
-- 综合阶段**不再扩展新竞品**
-- 仅允许为已选竞品**补搜关键缺失字段**（pricing / official features / negative reviews），**补搜总次数 ≤ 3**
-- 满足任一条件**立即停止调研、开始写报告**：
-  - N 个竞品全部完成（部分字段缺失也算）
-  - 已用工具调用 ≥ 30
-  - 已用时 ≥ 总预算的 70%
-- **不要因为"再补一点会更好"而继续**
-
----
-
-## Source 最小结构
-
-每个引用来源至少记录：
-
-```json
-{
-  "url": "https://example.com/pricing",
-  "title": "Pricing page",
-  "publisher": "Example",
-  "fetched_at": "2026-05-14T19:00:00+08:00",
-  "used_for": ["pricing", "feature_matrix"]
-}
-```
-
-- 报告正文用 inline URL 即可（如 `[example.com/pricing]`）
-- 项目工程实现中映射为 `source_id`，与 `sources_pool` 对接
-- `used_for` 字段帮助后续审计哪个引用支撑哪类事实
-
-完整 schema 见 [`schemas/competitor-card.json`](./schemas/competitor-card.json)。
-
----
-
-## 输出验收标准
-
-一次合格输出必须满足：
-
-- ✅ 至少 3 个竞品，默认 5 个
-- ✅ 必含：竞品概览表、功能矩阵、定价矩阵、用户痛点表、目标产品 SWOT、战略建议
-- ✅ 每个竞品**至少 2 个来源**，其中**至少 1 个官方来源**（官网 / 官方博客 / 官方定价页）
-- ✅ 定价信息必须**优先来自官网 pricing 页**；没有则明确标"未公开 / 信息不足"
-- ✅ 差评 / 用户痛点**不能为空**；若公开评价不足，必须显式说明"评价不足"
-- ✅ 报告语言为中文，产品名 / 公司名 / 套餐名保留英文
-- ✅ 报告开头若使用了澄清默认值，必须显式声明默认假设
-
----
-
-## 输出语言
-
-- 报告全部中文
-- 表格字段值保留英文专有名词（产品名 / 公司名）
-- 引用 URL 直接 inline（不混淆 source_id 体系）
-
----
-
-## 严禁事项
-
-- ❌ 跳过澄清直接调研
-- ❌ 凭空构造 URL / 编造融资金额 / 编造价格
-- ❌ 写自由叙述长文而非结构化矩阵
-- ❌ 用模糊词替代具体数据（"很多用户认为..."）
-- ❌ 给目标产品做 SWOT 时只写优点
-
----
-
-## 与本项目 agent 的差异
-
-| 维度 | 本 Skill（人调 CC） | Agent 系统（代码调 SDK） |
-|------|------------------|--------------------------|
-| 引用约束 | 软（prompt 引导）| 硬（tool schema 强校验）|
-| Subagent | Task 通用 | research_competitor 专用 |
-| 澄清 | AskUserQuestion | ask_user tool + WS interrupt |
-| 预算 | 模糊感知 | check_budget tool 实时 |
-| 可视化 | CC 自带 | 自建事件流 |
-| 重复使用 | CC 中即调即用 | 部署后 Web 访问 |
-
-Skill 是**方法论的口语化表达**，Agent 是**方法论的工程化封装**。
-
----
-
-## 案例库（实验产出）
-
-跑通的 case 归档在 [`examples/`](./examples/)，每个 case 包含：
-- 完整报告
-- 执行过程笔记（tool 序列 + 错误日志）
-- 引用真实性审计
-
-| Case | 状态 | 关键发现 |
-|------|------|---------|
-| Cursor | 待跑（5/15-5/17）| — |
-| Notion AI | 待跑（5/18）| — |
-| Linear | 待跑（5/19）| — |
-
----
-
-## 调用方式
-
-在 Claude Code 中：
+**报告必含 7 段**
 
 ```
-请用 competitive-analysis skill 帮我做 {产品名} 的竞品分析。
+1. 执行摘要 → 2. 竞品概览表 → 3. 功能矩阵 → 4. 定价矩阵
+→ 5. 用户痛点对比 → 6. 目标产品 SWOT → 7. 战略建议
 ```
 
-或直接：
+**单竞品工具上限**：WebSearch ≤ 3 / WebFetch ≤ 5
 
-```
-做 {产品名} 的竞品分析
-```
+**引用分层**
 
-CC 应自动触发本 skill。
+| 内容类型 | 引用要求 |
+|---------|---------|
+| 事实（定位 / 功能 / 价格 / 融资 / 客户 / 评价 / 团队） | 必须有真实访问过的 URL |
+| 分析结论（SWOT / 差异化 / 战略建议 / 定位象限） | 不需逐句引用，但必须基于前文引用过的事实 |
+
+**报告语言**：中文；产品 / 公司 / 套餐名保留英文。
+
+## Common Mistakes
+
+| ❌ 错误 | ✅ 正确 |
+|--------|--------|
+| 跳过澄清直接调研 | 必须先 `AskUserQuestion`，超时用默认值并在报告头声明 |
+| 凭空构造 URL / 编造价格 / 编造融资 | 不确定就标 "信息不足"；价格信息必须来自官网 pricing 页或显式标 "未公开" |
+| 输出自由叙述长文 | 强制 7 段表格化结构，叙述只在执行摘要和战略建议段 |
+| 给目标产品 SWOT 只写优点 | S/W/O/T 必须各 ≥ 2 条；差评和威胁不可空 |
+| 综合阶段反复补搜 | 补搜 ≤ 3 次，超过即用现有数据出报告 |
+| 用 "many users believe" 类模糊词 | 必须 "Reddit 用户 X 评论..."（带 source）或不写 |
+
+## Output Acceptance Criteria
+
+详见 [reference/output-spec.md](./reference/output-spec.md#acceptance)。核心 6 条：
+
+- ≥ 3 个竞品（默认 5）
+- 7 段全齐
+- 每竞品 ≥ 2 来源，其中 ≥ 1 官方
+- 定价来自官网或标"未公开"
+- 差评不可空，不足须显式声明
+- 若用了澄清默认值，报告头必须声明
+
+## Reference Files
+
+- [reference/playbook.md](./reference/playbook.md) — 工作流详细步骤
+- [reference/disciplines.md](./reference/disciplines.md) — 五大纪律完整版
+- [reference/output-spec.md](./reference/output-spec.md) — 报告 7 段细节 + 验收标准 + Source 结构
+- [reference/integration.md](./reference/integration.md) — 与本项目 agent 系统的对接（开发者参考）
+- [schemas/competitor-card.json](./schemas/competitor-card.json) — 单竞品 JSON Schema
+- [CHANGELOG.md](./CHANGELOG.md) — 版本迭代历史
+
+## Examples
+
+跑通的 case 归档在 `examples/`：
+
+| Case | 状态 |
+|------|------|
+| Cursor | 待跑（5/15-5/17）|
+| Notion AI | 待跑（5/18）|
+| Linear | 待跑（5/19）|

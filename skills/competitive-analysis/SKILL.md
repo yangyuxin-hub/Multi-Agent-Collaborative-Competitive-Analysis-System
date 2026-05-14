@@ -29,7 +29,7 @@ description: Use when the user asks for competitive analysis of a specific produ
 2. **澄清** — `AskUserQuestion` 问视角 / 地域 / 数量（30s 超时用默认值 + 报告头声明）
 3. **找候选** — `WebSearch` 1-2 次验证 + 补全候选名单
 4. **单竞品调研** — 对每个竞品独立调研（建议 `Task` 子 agent 隔离上下文），收集 [competitor-card](./schemas/competitor-card.json) 字段
-5. **综合 + 写报告** — 按 [reference/output-spec.md](./reference/output-spec.md) 7 段结构产出
+5. **综合 + 写报告** — 按 [reference/output-spec.md](./reference/output-spec.md) 7 段结构产出 **同时输出 `.md` 和 `.html`**（HTML 含 Mermaid 定位象限图 + SWOT 2×2 网格 + 定价条形对比，见 [reference/html-template.md](./reference/html-template.md)）
 
 ## Five Disciplines（违反即失败）
 
@@ -89,7 +89,8 @@ description: Use when the user asks for competitive analysis of a specific produ
 
 - [reference/playbook.md](./reference/playbook.md) — 工作流详细步骤
 - [reference/disciplines.md](./reference/disciplines.md) — 五大纪律完整版
-- [reference/output-spec.md](./reference/output-spec.md) — 报告 7 段细节 + 验收标准 + Source 结构
+- [reference/output-spec.md](./reference/output-spec.md) — 报告 7 段细节 + 验收 + **双格式产出（md + html）+ Source 结构**
+- [reference/html-template.md](./reference/html-template.md) — HTML 报告模板（Mermaid 象限图 / SWOT 网格 / 定价条形 / 战略卡片）
 - [reference/integration.md](./reference/integration.md) — 与本项目 agent 系统的对接（开发者参考）
 - [schemas/competitor-card.json](./schemas/competitor-card.json) — 单竞品 JSON Schema
 - [CHANGELOG.md](./CHANGELOG.md) — 版本迭代历史

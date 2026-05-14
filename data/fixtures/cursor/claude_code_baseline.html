@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Cursor 竞品分析报告</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --primary: #0969da;
+    --success: #1a7f37;
+    --warning: #bf8700;
+    --danger: #d1242f;
+    --bg: #ffffff;
+    --bg-soft: #f6f8fa;
+    --border: #d0d7de;
+    --text: #1f2328;
+    --text-soft: #656d76;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+    color: var(--text);
+    line-height: 1.7;
+    background: #fafbfc;
+  }
+  header.report-head {
+    background: linear-gradient(135deg, var(--primary), #0050a0);
+    color: white;
+    padding: 32px;
+    border-radius: 12px;
+    margin-bottom: 32px;
+  }
+  header.report-head h1 { margin: 0 0 8px; font-size: 28px; }
+  header.report-head .meta {
+    opacity: 0.9;
+    font-size: 14px;
+    margin: 0;
+  }
+  header.report-head .tags {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  header.report-head .tag {
+    background: rgba(255,255,255,0.18);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+  }
+  section {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  }
+  section h2 {
+    font-size: 22px;
+    margin: 0 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--bg-soft);
+    color: var(--primary);
+  }
+  section h3 { font-size: 16px; margin: 24px 0 8px; color: var(--text); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    background: var(--bg-soft);
+    font-weight: 600;
+    color: var(--text);
+    position: sticky;
+    top: 0;
+  }
+  tr:hover { background: rgba(9,105,218,0.03); }
+  .check-full { color: var(--success); font-weight: 700; }
+  .check-partial { color: var(--warning); font-weight: 700; }
+  .check-none { color: var(--danger); font-weight: 700; }
+  .check-unknown { color: var(--text-soft); }
+  code { background: var(--bg-soft); padding: 1px 6px; border-radius: 3px; font-size: 0.92em; color: #cf222e; }
+  a { color: var(--primary); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* SWOT 2×2 网格 */
+  .swot-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .swot {
+    padding: 16px 20px;
+    border-radius: 10px;
+    border: 2px solid;
+    background: var(--bg-soft);
+  }
+  .swot h4 { margin: 0 0 12px; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+  .swot ul { margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.6; }
+  .swot li { margin-bottom: 6px; }
+  .swot.s { border-color: var(--success); }
+  .swot.s h4 { color: var(--success); }
+  .swot.w { border-color: var(--danger); }
+  .swot.w h4 { color: var(--danger); }
+  .swot.o { border-color: var(--primary); }
+  .swot.o h4 { color: var(--primary); }
+  .swot.t { border-color: var(--warning); }
+  .swot.t h4 { color: var(--warning); }
+
+  /* 定价条形对比 */
+  .price-bar-chart { margin: 16px 0; }
+  .price-row {
+    display: grid;
+    grid-template-columns: 140px 1fr 80px;
+    gap: 12px;
+    align-items: center;
+    margin: 6px 0;
+    font-size: 13px;
+  }
+  .price-row .label { font-weight: 600; }
+  .price-row .bar-container { background: var(--bg-soft); height: 24px; border-radius: 4px; overflow: hidden; }
+  .price-row .bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), #0050a0);
+    color: white;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    font-size: 12px;
+    transition: width 0.6s;
+  }
+  .price-row .value { font-weight: 600; color: var(--primary); text-align: right; }
+  .price-row.free .bar { background: linear-gradient(90deg, var(--success), #137333); }
+
+  /* 战略建议卡片 */
+  .strategy-card {
+    border-left: 4px solid var(--primary);
+    padding: 12px 16px;
+    margin: 12px 0;
+    background: var(--bg-soft);
+    border-radius: 0 8px 8px 0;
+  }
+  .strategy-card h4 { margin: 0 0 6px; color: var(--primary); font-size: 15px; }
+  .strategy-card .why { font-size: 13px; color: var(--text-soft); margin: 6px 0; }
+  .strategy-card .how { font-size: 14px; margin: 6px 0; }
+
+  /* Mermaid 容器 */
+  .mermaid {
+    text-align: center;
+    background: var(--bg);
+    padding: 24px;
+    margin: 16px 0;
+    border-radius: 8px;
+    border: 1px dashed var(--border);
+  }
+
+  /* 摘要 callout */
+  .summary-callout {
+    background: linear-gradient(135deg, #f0f7ff, #e6f0ff);
+    border-left: 4px solid var(--primary);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+  }
+  .summary-callout p { margin: 0 0 8px; }
+  .summary-callout p:last-child { margin-bottom: 0; }
+  .summary-callout strong { color: var(--primary); }
+
+  /* 引用来源汇总 */
+  .sources-list {
+    columns: 2;
+    column-gap: 32px;
+    font-size: 13px;
+  }
+  .sources-list h4 { color: var(--primary); margin: 12px 0 4px; break-after: avoid; }
+  .sources-list ul { margin: 0 0 12px; padding-left: 20px; }
+
+  /* 响应式 */
+  @media (max-width: 768px) {
+    body { padding: 16px 12px; }
+    .swot-grid { grid-template-columns: 1fr; }
+    .sources-list { columns: 1; }
+    table { font-size: 12px; }
+    th, td { padding: 6px 8px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="report-head">
+  <h1>Cursor 竞品分析报告</h1>
+  <p class="meta">视角：创业者 / 战略 · 市场：全球 · 报告时间 2026-05-14</p>
+  <div class="tags">
+    <span class="tag">5 个竞品</span>
+    <span class="tag">21 个工具调用</span>
+    <span class="tag">由 Claude Code + skill v0.2 产出</span>
+  </div>
+</header>
+
+<section>
+  <h2>1. 执行摘要</h2>
+  <div class="summary-callout">
+    <p>AI 编程工具赛道在 2025-2026 完成首轮洗牌：<strong>Cursor 凭借 AI-native IDE 体验占据创业团队心智</strong>，但面临三面夹击 —— GitHub Copilot $10 Pro 反扑、Windsurf 在 agentic 维度做出技术差异（Google 反向收购核心团队后仍持续）、字节 Trae 以"免费 + Builder Mode + 多模型"打中国与价格敏感市场。</p>
+    <p>赛道从"补全工具"演化为<strong>代理式 IDE</strong>，护城河重心转向<strong>上下文工程深度 + 模型组合自由度 + 开发者迁移成本</strong>。</p>
+    <p>Cursor 最大风险：<strong>定价透明度危机</strong>（用户实际月费常 $40-50）与 <strong>Copilot Pro+ / Claude Code 在企业市场的合规优势</strong>。战略机会在<strong>团队级上下文 + 代码库智能体 + 隐私合规三件套</strong>。</p>
+  </div>
+</section>
+
+<section>
+  <h2>2. 竞品概览</h2>
+  <table>
+    <thead>
+      <tr><th>产品</th><th>公司</th><th>定位</th><th>目标用户</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Cursor</strong></td><td>Anysphere</td><td>AI-native code editor</td><td>专业开发者、AI-heavy 团队、Fortune 500（含 NVIDIA 4 万工程师）</td></tr>
+      <tr><td><strong>GitHub Copilot</strong></td><td>GitHub / Microsoft</td><td>全平台 AI 编程加速器</td><td>GitHub 用户、企业级开发者</td></tr>
+      <tr><td><strong>Windsurf</strong></td><td>Codeium（Google 已收购核心团队）</td><td>Agentic IDE，Cascade 多步编辑</td><td>AI 编程早期采用者</td></tr>
+      <tr><td><strong>Trae</strong></td><td>ByteDance 字节跳动</td><td>免费 AI IDE + Builder Mode</td><td>价格敏感开发者、中国市场、初学者</td></tr>
+      <tr><td><strong>Claude Code</strong></td><td>Anthropic</td><td>CLI 优先的跨平台编程 agent</td><td>终端重度用户、异步任务场景</td></tr>
+      <tr><td><strong>Cline</strong></td><td>Cline Inc.</td><td>开源 agentic coding，BYOK</td><td>高自由度团队、企业自托管诉求</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>3. 功能矩阵</h2>
+  <table>
+    <thead>
+      <tr><th>功能</th><th>Cursor</th><th>Copilot</th><th>Windsurf</th><th>Trae</th><th>Claude Code</th><th>Cline</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>代码补全（Tab）</td><td class="check-full">✅</td><td class="check-full">✅</td><td class="check-partial">⚠️</td><td class="check-full">✅</td><td class="check-unknown">—</td><td class="check-partial">⚠️</td></tr>
+      <tr><td>Agentic 多步编辑</td><td class="check-full">✅</td><td class="check-full">✅</td><td class="check-full">✅</td><td class="check-full">✅</td><td class="check-full">✅</td><td class="check-full">✅</td></tr>
+      <tr><td>多模型选择</td><td class="check-full">✅</td><td class="check-full">✅</td><td class="check-full">✅</td><td class="check-full">✅</td><td class="check-none">❌（仅 Claude）</td><td class="check-full">✅（BYOK）</td></tr>
+      <tr><td>多文件 / 代码库语义搜索</td><td class="check-full">✅</td><td class="check-full">✅</td><td class="check-partial">⚠️</td><td class="check-full">✅</td><td class="check-full">✅</td><td class="check-full">✅</td></tr>
+      <tr><td>VS Code / JetBrains 原生</td><td class="check-partial">⚠️ (fork)</td><td class="check-full">✅ 原生 11+</td><td class="check-partial">⚠️ (fork)</td><td class="check-partial">⚠️ (fork)</td><td class="check-full">✅ 插件</td><td class="check-full">✅ 原生</td></tr>
+      <tr><td>CLI / 终端</td><td class="check-full">✅</td><td class="check-full">✅</td><td class="check-unknown">—</td><td class="check-unknown">—</td><td class="check-full">✅ 优先</td><td class="check-full">✅</td></tr>
+      <tr><td>异步 / 后台任务</td><td class="check-full">✅ Cloud Agents</td><td class="check-full">✅</td><td class="check-none">❌ 无 cross-branch</td><td class="check-unknown">—</td><td class="check-full">✅ Routines</td><td class="check-unknown">—</td></tr>
+      <tr><td>多模态输入（Figma 等）</td><td class="check-partial">⚠️</td><td class="check-unknown">—</td><td class="check-unknown">—</td><td class="check-full">✅ Figma→React</td><td class="check-unknown">—</td><td class="check-unknown">—</td></tr>
+      <tr><td>开源 / 自托管</td><td class="check-none">❌</td><td class="check-none">❌</td><td class="check-none">❌</td><td class="check-none">❌</td><td class="check-none">❌</td><td class="check-full">✅ 61.8k★</td></tr>
+      <tr><td>企业级合规（SAML / SCIM）</td><td class="check-full">✅</td><td class="check-full">✅</td><td class="check-full">✅</td><td class="check-unknown">❓ 隐私争议</td><td class="check-full">✅</td><td class="check-full">✅</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px; color:var(--text-soft);">
+    <span class="check-full">✅</span> 完整 ·
+    <span class="check-partial">⚠️</span> 部分 / 有限 ·
+    <span class="check-none">❌</span> 不支持 ·
+    <span class="check-unknown">—/❓</span> 信息不足
+  </p>
+</section>
+
+<section>
+  <h2>4. 定价矩阵</h2>
+  <table>
+    <thead>
+      <tr><th>产品</th><th>免费</th><th>个人付费</th><th>团队</th><th>企业</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Cursor</strong></td><td>Hobby $0（限额）</td><td>Individual <strong>$20</strong>（Pro/Pro+/Ultra）</td><td>$40/user/月</td><td>Custom</td></tr>
+      <tr><td><strong>GitHub Copilot</strong></td><td>Free（50 agent + 2000 补全）</td><td>Pro <strong>$10</strong> / Pro+ $39</td><td>Business 未公开</td><td>Enterprise 未公开</td></tr>
+      <tr><td><strong>Windsurf</strong></td><td>Free</td><td>Pro <strong>$20</strong> / Max $200</td><td>$40/user/月</td><td>Custom</td></tr>
+      <tr><td><strong>Trae</strong></td><td>Free（5000 补全 + Claude 4）</td><td>Lite <strong>$3</strong> / Pro $10</td><td>未公开</td><td>未公开</td></tr>
+      <tr><td><strong>Claude Code</strong></td><td>—</td><td>Pro 套餐内置 <strong>$17-20</strong></td><td>Team / Enterprise</td><td>Custom</td></tr>
+      <tr><td><strong>Cline</strong></td><td>开源免费（BYOK）</td><td>BYOK 实付 <strong>$5-50</strong></td><td>Q1'26 前免费，后 $20/user</td><td>Custom</td></tr>
+    </tbody>
+  </table>
+
+  <h3>个人付费档可视化对比（$/月）</h3>
+  <div class="price-bar-chart">
+    <div class="price-row free"><span class="label">Trae Lite</span><div class="bar-container"><div class="bar" style="width:8%">极低</div></div><span class="value">$3</span></div>
+    <div class="price-row"><span class="label">Cline BYOK 下限</span><div class="bar-container"><div class="bar" style="width:13%"></div></div><span class="value">$5</span></div>
+    <div class="price-row"><span class="label">Copilot Pro</span><div class="bar-container"><div class="bar" style="width:25%">市场最低</div></div><span class="value">$10</span></div>
+    <div class="price-row"><span class="label">Trae Pro</span><div class="bar-container"><div class="bar" style="width:25%"></div></div><span class="value">$10</span></div>
+    <div class="price-row"><span class="label">Claude Code (Pro)</span><div class="bar-container"><div class="bar" style="width:43%"></div></div><span class="value">$17</span></div>
+    <div class="price-row"><span class="label">Cursor Individual</span><div class="bar-container"><div class="bar" style="width:50%">广告价</div></div><span class="value">$20</span></div>
+    <div class="price-row"><span class="label">Windsurf Pro</span><div class="bar-container"><div class="bar" style="width:50%"></div></div><span class="value">$20</span></div>
+    <div class="price-row"><span class="label">Cursor 实际月费</span><div class="bar-container"><div class="bar" style="width:100%; background:linear-gradient(90deg, var(--danger), #a01825);">⚠️ 实际溢价</div></div><span class="value">$40-50</span></div>
+    <div class="price-row"><span class="label">Copilot Pro+</span><div class="bar-container"><div class="bar" style="width:98%; background:linear-gradient(90deg, var(--warning), #8a6500);">含 Opus 4.7</div></div><span class="value">$39</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>5. 用户痛点对比</h2>
+  <table>
+    <thead><tr><th>产品</th><th>主要好评</th><th>主要差评 / 痛点（机会所在）</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Cursor</strong></td><td>AI-native IDE 心智强；NVIDIA / Fortune 500 背书</td><td><span class="check-none">●</span> 定价不透明（$20 套实付 $40-50）<br><span class="check-none">●</span> 自主行为风险（改无关文件后否认）<br><span class="check-none">●</span> 强制 telemetry（企业版不可关）<br><span class="check-none">●</span> 客服不响应 / Windows 更新崩溃</td></tr>
+      <tr><td><strong>Copilot</strong></td><td>生态捆绑，企业采购阻力小</td><td><span class="check-none">●</span> 2026 Q2 限额风波 + 计费 bug<br><span class="check-none">●</span> 大代码库准确率仅 50%（Ryz Labs）<br><span class="check-none">●</span> Opus 4.6 在 Pro 不再可用<br><span class="check-none">●</span> 6/1 转用量计费引发用户抗议</td></tr>
+      <tr><td><strong>Windsurf</strong></td><td>Cascade 多步编辑最激进；Devin Cloud 集成</td><td><span class="check-none">●</span> 稳定性差（月级 Cascade 超时 / 崩溃）<br><span class="check-none">●</span> autocomplete 落后 Cursor<br><span class="check-none">●</span> 无 cross-branch agent<br><span class="check-none">●</span> OpenAI 收购失败 + Google 抽走 CEO，组织动荡</td></tr>
+      <tr><td><strong>Trae</strong></td><td>免费 + Claude 4 + Builder Mode + Figma 多模态</td><td><span class="check-none">●</span> 隐私争议（关闭 telemetry 后仍上传）<br><span class="check-none">●</span> 不适合政府/医疗/IP 敏感场景</td></tr>
+      <tr><td><strong>Claude Code</strong></td><td>CLI 优先体验独特；跨终端/IDE/Slack/Web</td><td><span class="check-none">●</span> 2026 Q2 性能危机（AMD AI 总监称"不可用"）<br><span class="check-none">●</span> 用量限额突变，用户"被 gaslighting"<br><span class="check-none">●</span> 仅 Claude 锁定</td></tr>
+      <tr><td><strong>Cline</strong></td><td>完全开源 + BYOK + 透明计费（无加价）</td><td><span class="check-none">●</span> 746 个未关 issue<br><span class="check-none">●</span> 代码质量需人工 review<br><span class="check-none">●</span> JetBrains 仅预览<br><span class="check-none">●</span> 用户自配 API 门槛</td></tr>
+    </tbody>
+  </table>
+  <div class="summary-callout">
+    <p><strong>共性洞察：</strong>所有商业付费产品在 2026 Q1-Q2 都遭遇了<strong>用量计费危机</strong>（Cursor / Copilot / Windsurf / Claude Code）— 这是赛道系统性问题。<strong>透明计费正在成为新差异化点</strong>。</p>
+  </div>
+</section>
+
+<section>
+  <h2>6. Cursor SWOT 分析</h2>
+  <div class="swot-grid">
+    <div class="swot s">
+      <h4>🟢 Strengths 优势</h4>
+      <ul>
+        <li><strong>AI-native IDE 心智占领</strong>：NVIDIA 4 万工程师 / Fortune 500 超 50% 信任使用</li>
+        <li><strong>多模型自由度</strong>：OpenAI / Anthropic / Gemini / xAI 同时支持</li>
+        <li><strong>完整产品生态</strong>：Tab / Composer 2 / Cloud Agents / BugBot / CLI / Slack 横向闭环</li>
+        <li><strong>企业级合规就绪</strong>：SAML / SSO / SCIM / 审计日志，Fortune 500 已验证</li>
+      </ul>
+    </div>
+    <div class="swot w">
+      <h4>🔴 Weaknesses 劣势</h4>
+      <ul>
+        <li><strong>定价透明度危机</strong>：实际月费 $40-50（120% 溢价），FTC / 消费者保护诉讼风险</li>
+        <li><strong>自主行为可信度问题</strong>：改无关文件 + 否认修改，企业代码库安全级缺陷</li>
+        <li><strong>强制 telemetry</strong>：企业版不可关，与金融/医疗/政府需求冲突</li>
+        <li><strong>客服响应弱</strong>：Trustpilot 持续吐槽，影响企业续约</li>
+        <li><strong>VS Code fork 历史包袱</strong>：长期维护成本高于插件方案</li>
+      </ul>
+    </div>
+    <div class="swot o">
+      <h4>🔵 Opportunities 机会</h4>
+      <ul>
+        <li><strong>企业级铁三角</strong>：团队上下文 + 隐私合规 + 计费透明，锁定企业市场</li>
+        <li><strong>Cursor Open / Self-host</strong>：开源核心 + 自托管 enterprise，反击 Cline + Copilot Enterprise</li>
+        <li><strong>AI 编码 IDE 标准制定者</strong>：以 NVIDIA / Fortune 500 客户为锚推协议</li>
+        <li><strong>自研补全模型</strong>：参考 Windsurf SWE-1.6，摆脱 OpenAI / Anthropic 价格博弈</li>
+      </ul>
+    </div>
+    <div class="swot t">
+      <h4>🟡 Threats 威胁</h4>
+      <ul>
+        <li><strong>Copilot $10 Pro 持续下压</strong>：生态 + 价格优势对个人用户层是结构性威胁</li>
+        <li><strong>Trae 免费 + Claude 4</strong>：中国 + 全球价格敏感市场降维打击</li>
+        <li><strong>Cline 透明计费 + 开源</strong>：挑战"商业 IDE 加价"叙事，企业自托管首选替代</li>
+        <li><strong>Windsurf Cascade 路线未停</strong>：Google 输血可能反扑</li>
+        <li><strong>云厂商捆绑销售</strong>：AWS/Azure/GCP 内嵌 AI 编程，纯 IDE 估值天花板存疑</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>7. 定位象限图</h2>
+  <p style="color:var(--text-soft); font-size:13px;">两个核心维度：横轴价格 ↔ 纵轴 Agentic 自主程度。点位代表市场认知与功能现状的综合判断。</p>
+  <div class="mermaid">
+quadrantChart
+    title 价格 vs Agentic 自主程度
+    x-axis "低价/免费" --> "高价"
+    y-axis "弱 Agentic" --> "强 Agentic"
+    quadrant-1 "高价高 Agentic"
+    quadrant-2 "低价强 Agentic"
+    quadrant-3 "低价弱 Agentic"
+    quadrant-4 "高价弱 Agentic"
+    Cursor: [0.55, 0.75]
+    "GitHub Copilot": [0.3, 0.55]
+    Windsurf: [0.6, 0.88]
+    Trae: [0.12, 0.65]
+    "Claude Code": [0.5, 0.7]
+    Cline: [0.28, 0.78]
+  </div>
+  <div class="summary-callout">
+    <p><strong>洞察：</strong>Cursor 与 Windsurf / Claude Code 同处"高价强 Agentic"象限；Cline 用开源 + BYOK 模式落在"低价强 Agentic"是最危险的替代者；Trae 用免费切入"低价强 Agentic"是新进者。Cursor 的真正风险是 <strong>Cline 与 Trae 沿对角线挤压</strong>。</p>
+  </div>
+</section>
+
+<section>
+  <h2>8. 战略建议</h2>
+
+  <div class="strategy-card">
+    <h4>建议 1：定价大改革 — 从黑盒转向透明可预测</h4>
+    <p class="why"><strong>为什么</strong>：用户实际月费 $40-50 是差评核心，面对 FTC 风险。Copilot 6/1 转用量计费已引发"少给同价"舆论。</p>
+    <p class="how"><strong>怎么做</strong>：学 Cline "$100 投入 = $100 模型能力"叙事；Pro 套餐改"固定 800 fast requests + 透明 overage"；应用内实时显示 token 用量。</p>
+  </div>
+
+  <div class="strategy-card">
+    <h4>建议 2：发布 Cursor Open / Self-host 版本</h4>
+    <p class="why"><strong>为什么</strong>：隐私敏感行业是 Copilot Enterprise / Cline 的护城河；Cursor 强制 telemetry 是关键卡点。</p>
+    <p class="how"><strong>怎么做</strong>：Cursor Core 开源（VS Code 双轨制）；推出 self-host enterprise（GitLab CE/EE 模式）；一举反击 Cline 开源叙事 + Copilot 隐私叙事。</p>
+  </div>
+
+  <div class="strategy-card">
+    <h4>建议 3：团队上下文 + 隐私合规 = 企业铁三角</h4>
+    <p class="why"><strong>为什么</strong>：单纯做更聪明的 agent 会被模型迭代追平，护城河在工程化 + 合规化。</p>
+    <p class="how"><strong>怎么做</strong>：团队级代码库语义索引 + 知识沉淀；显式可关闭 telemetry + 数据隔离审计报告；NVIDIA / Fortune 500 case study 作为 enterprise sales 弹药。</p>
+  </div>
+
+  <div class="strategy-card">
+    <h4>建议 4：构建"自主行为可信度"工程能力</h4>
+    <p class="why"><strong>为什么</strong>：用户报告 Cursor 改无关文件 + 否认修改，是比性能更严重的企业级缺陷；Copilot Pro+ 已抢先 IP 赔偿条款。</p>
+    <p class="how"><strong>怎么做</strong>：强制 agent 操作可追溯（diff 日志 + 意图回放）；高危操作二次确认（删除 / 改 secret / 跨目录）；学 Copilot 推出 IP 赔偿承诺。</p>
+  </div>
+
+  <div class="strategy-card">
+    <h4>建议 5：对 Trae / 中国市场 — 不打</h4>
+    <p class="why"><strong>为什么</strong>：字节免费 + Claude 4 + 中文社区 + 国内法规友好，Cursor 在中国无成本也无渠道优势。</p>
+    <p class="how"><strong>怎么做</strong>：让位 Trae，不投本地化；全球价格敏感市场（拉美 / 东南亚）推地区差异化 Pro 对抗 Trae；集中火力守欧美企业市场。</p>
+  </div>
+</section>
+
+<section>
+  <h2>引用来源汇总</h2>
+  <div class="sources-list">
+    <h4>Cursor</h4>
+    <ul>
+      <li><a href="https://cursor.com">cursor.com</a> · <a href="https://cursor.com/pricing">/pricing</a></li>
+      <li><a href="https://www.eesel.ai/blog/cursor-reviews">Cursor reviews · eesel.ai</a></li>
+    </ul>
+
+    <h4>GitHub Copilot</h4>
+    <ul>
+      <li><a href="https://github.com/features/copilot">github.com/features/copilot</a> · <a href="https://github.com/features/copilot/plans">/plans</a></li>
+      <li><a href="https://www.theregister.com/2026/04/15/github_copilot_rate_limiting_bug/">Copilot rate limit drama · The Register</a></li>
+      <li><a href="https://visualstudiomagazine.com/articles/2026/04/27/devs-sound-off-on-usage-based-copilot-pricing-change-you-will-get-less-but-pay-the-same-price.aspx">Devs sound off · VisualStudio Magazine</a></li>
+    </ul>
+
+    <h4>Windsurf</h4>
+    <ul>
+      <li><a href="https://windsurf.com">windsurf.com</a> · <a href="https://windsurf.com/pricing">/pricing</a></li>
+      <li><a href="https://fortune.com/2025/07/11/the-exclusivity-on-openais-3-billion-acquisition-for-coding-startup-windsfurf-has-expired/">OpenAI $3B deal collapses · Fortune</a></li>
+      <li><a href="https://devtoolsreview.com/reviews/windsurf-review/">Windsurf review after 6 months</a></li>
+    </ul>
+
+    <h4>Trae</h4>
+    <ul>
+      <li><a href="https://www.trae.ai">trae.ai</a></li>
+      <li><a href="https://vibecoding.app/blog/trae-review">Trae review · vibecoding.app</a></li>
+    </ul>
+
+    <h4>Claude Code</h4>
+    <ul>
+      <li><a href="https://claude.com/product/claude-code">claude.com/product/claude-code</a></li>
+      <li><a href="https://fortune.com/2026/04/24/anthropic-engineering-missteps-claude-code-performance-decline-user-backlash/">Performance decline · Fortune</a></li>
+    </ul>
+
+    <h4>Cline</h4>
+    <ul>
+      <li><a href="https://cline.bot">cline.bot</a> · <a href="https://cline.bot/pricing">/pricing</a></li>
+      <li><a href="https://www.globenewswire.com/news-release/2025/07/31/3125274/0/en/Cline-Raises-32M-in-Seed-and-Series-A-Funding-to-Bring-Agentic-AI-Coding-to-Enterprise-Software-Teams.html">$32M funding · GlobeNewswire</a></li>
+    </ul>
+  </div>
+</section>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    quadrantChart: { chartWidth: 800, chartHeight: 500 },
+    flowchart: { curve: 'basis', useMaxWidth: true },
+    securityLevel: 'loose'
+  });
+</script>
+
+</body>
+</html>

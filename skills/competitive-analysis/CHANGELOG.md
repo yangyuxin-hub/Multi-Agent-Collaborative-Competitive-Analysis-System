@@ -68,6 +68,28 @@
 
 ---
 
+## v0.2.1 · 2026-05-14（HTML 视觉化 hotfix）
+
+**状态**：补丁版本，新增 HTML 双输出规范
+
+**修改**：
+- SKILL.md Workflow 第 5 步加上"同时输出 .md 和 .html"
+- output-spec.md 新增"输出双轨"段；验收清单从 9 条扩到 12 条（双格式 / 可视化 / 共性洞察）
+- 新增 `reference/html-template.md`：HTML 模板规范 + Mermaid quadrantChart 语法 + SWOT 2×2 网格 / 定价条形 / 战略卡片样式 + CSS 变量
+- Cursor case 实战产出 `claude_code_baseline.html`（self-contained 单文件，CDN Mermaid，浏览器直开）
+
+**HTML 必备视觉元素**：
+1. 渐变色 banner + 标签
+2. 摘要 callout
+3. SWOT 2×2 色彩网格
+4. Mermaid 定位象限图（quadrantChart）
+5. 定价条形对比（HTML/CSS）
+6. 战略建议卡片化
+
+**理由**：纯 md 表格视觉密度低，答辩 / 分享场景需要 HTML 可视化产出。Mermaid quadrantChart 是答辩"输出对比"页的核心视觉素材。
+
+---
+
 ## v0.3 · 待执行（5/15-5/17 修订）
 
 **触发**：Cursor case 已跑通（[examples/cursor.md](./examples/cursor.md)），需根据观察更新 skill

@@ -10,7 +10,7 @@
 3. **响应式**：手机也能看（关键给评委 / leader 分享场景）
 4. **轻量**：单文件 < 50KB，无构建工具
 
-## 必备视觉元素（4 件套）
+## 必备视觉元素
 
 ### 1. 头部 Banner
 
@@ -43,6 +43,8 @@
 颜色映射：S=绿 / W=红 / O=蓝 / T=黄。
 
 ### 4. 定位象限图（Mermaid quadrantChart）
+
+象限图是报告 7 段内的可视化模块，通常放在"竞品概览"之后或"战略建议"之前，但**不要新增第 8 个主段落**。
 
 ```html
 <div class="mermaid">
@@ -112,6 +114,24 @@ quadrantChart
 
 - 功能矩阵：用 `✅` / `⚠️` / `❌` / `—` / `❓`，配套色类 `.check-full` / `.check-partial` / `.check-none` / `.check-unknown`
 - 表格底部加图例
+- 宽表必须包在 `.table-wrap` 内：
+
+```html
+<div class="table-wrap">
+  <table>...</table>
+</div>
+```
+
+```css
+.table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-wrap table { min-width: 720px; }
+@media (max-width: 768px) {
+  body { padding: 16px 12px; overflow-x: hidden; }
+  section { padding: 20px 16px; overflow-x: hidden; }
+  .mermaid { overflow-x: auto; padding: 12px; }
+  .mermaid svg { max-width: 100%; height: auto; }
+}
+```
 
 ## Mermaid 初始化
 
@@ -143,7 +163,7 @@ quadrantChart
 3. **应用模板** — 复制本目录 baseline.html 改内容
 4. **填入 Mermaid quadrantChart** — 6 个竞品的坐标（自评，0-1 区间）
 5. **填入定价条形** — 按价格升序，宽度 = 价格/最大价格 * 100%
-6. **打开浏览器验收** — 确认 Mermaid 渲染正常 + 移动端样式 OK
+6. **打开浏览器验收** — 确认 Mermaid 渲染正常 + 移动端 `document.documentElement.scrollWidth <= window.innerWidth + 1`，宽表只在 `.table-wrap` 内横向滚动
 
 ## 禁止事项
 

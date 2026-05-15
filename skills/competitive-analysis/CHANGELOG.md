@@ -90,17 +90,28 @@
 
 ---
 
-## v0.3 · 待执行（5/15-5/17 修订）
+## v0.3 · 2026-05-14（Cursor case 反馈修订）
 
-**触发**：Cursor case 已跑通（[examples/cursor.md](./examples/cursor.md)），需根据观察更新 skill
+**状态**：已应用到 skill / references / baseline fixture / agent prompt 草稿
 
-**实战发现的 6 处需改进**（来自 [examples/cursor.md](./examples/cursor.md#修订建议)）：
+**触发**：Cursor case 已跑通（[examples/cursor.md](./examples/cursor.md)），按实战观察把高频失败模式前移为规则。
+
+**修改清单**：
 1. **Tool 顺序调整**：playbook 改为"先 WebSearch 评估官网信息密度，再决定 fetch 几页"（Trae / Windsurf 官网内容稀薄，盲 fetch 浪费）
-2. **Reddit 不可 fetch**：disciplines.md 错误纪律加"Reddit 在 CC 中不可 fetch，差评走 G2 / Capterra / dev.to / The Register 等聚合站"
-3. **Redirect 处理**：错误纪律加"fetch 返回 redirect 时跟随新 URL，不算失败"
-4. **自由文本兜底**：playbook 第 2 步加"若用户用自由文本回答数量，LLM 自行解析为整数；解析失败用默认 5"
-5. **官方来源优先级修正**：实际是"**定价页 > 官网 > 评测站**"（Trae 官网空但评测站有完整定价）
-6. **新增"共性洞察"提示**：output-spec.md 加一行引导主 agent 主动寻找跨竞品共性（如"用量计费危机"这种横向观察）
+2. **Reddit 不可 fetch**：disciplines.md 错误纪律明确 Reddit 不可直接 fetch 时换用 WebSearch 摘要、HN、G2、Capterra、dev.to、The Register、Trustpilot 等来源
+3. **Redirect 处理**：错误纪律新增"fetch 返回 redirect 时跟随新 URL，不算失败"
+4. **自由文本兜底**：playbook 第 2 步新增"用户自由文本回答数量时，解析为合理整数和必含竞品；解析失败用默认 5"
+5. **官方来源优先级修正**：定价来源优先级改为"官网 pricing > 官网文档/FAQ > 可信第三方 review > 信息不足"
+6. **共性洞察前置**：output-spec 要求第 5 段末尾必须包含至少 1 条跨竞品共性洞察
+7. **事实风险清单**：价格 / 融资 / 收购 / 用户数 / star 数等高风险事实必须二次确认或进入附录
+8. **HTML 契约修复**：HTML 仍只能有 7 个编号主段落；象限图作为模块嵌入，不新增第 8 段；移动端宽表用容器滚动
+9. **schema / prompt 对齐**：Researcher 返回字段统一为 `name` / `sources` / `pricing_tiers.source_url`，同步 `competitor-card.json`
+10. **新增结构验收脚本**：`scripts/validate_report.py`，用于检查 md/html 结构、共性洞察、可视化模块等
+
+**已验证**：
+- `python skills/competitive-analysis/scripts/validate_report.py --md data/fixtures/cursor/claude_code_baseline.md --html data/fixtures/cursor/claude_code_baseline.html`
+- `competitor-card.json` 可被 JSON parser 读取
+- 浏览器 390px 宽度检查：`documentWidth=375`，7 个编号 h2，Mermaid SVG 已渲染
 
 **待人工补：**
 - [ ] 引用真实性抽查（NVIDIA 4 万 / Ryz Labs 50% / Cline stars 等 5 条待验证事实）
@@ -109,7 +120,7 @@
 
 ---
 
-## v0.3 · 计划 5/18
+## v0.4 · 计划 5/18
 
 **触发**：Notion AI case 跑完
 

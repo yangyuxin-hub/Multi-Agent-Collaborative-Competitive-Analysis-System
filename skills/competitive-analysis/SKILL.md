@@ -27,9 +27,9 @@ description: Use when the user asks for competitive analysis of a specific produ
 
 1. **规划** — 内部 think，列出 5-8 个候选竞品（≤ 30 秒）
 2. **澄清** — `AskUserQuestion` 问视角 / 地域 / 数量（30s 超时用默认值 + 报告头声明）
-3. **找候选** — `WebSearch` 1-2 次验证 + 补全候选名单
-4. **单竞品调研** — 对每个竞品独立调研（建议 `Task` 子 agent 隔离上下文），收集 [competitor-card](./schemas/competitor-card.json) 字段
-5. **综合 + 写报告** — 按 [reference/output-spec.md](./reference/output-spec.md) 7 段结构产出 **同时输出 `.md` 和 `.html`**（HTML 含 Mermaid 定位象限图 + SWOT 2×2 网格 + 定价条形对比，见 [reference/html-template.md](./reference/html-template.md)）
+3. **找候选** — `WebSearch` 1-2 次验证 + 补全候选名单；找到 N 个就停
+4. **单竞品调研** — 对每个竞品独立调研（建议 `Task` 子 agent 隔离上下文），先用搜索判断页面信息密度，再收集 [competitor-card](./schemas/competitor-card.json) 字段
+5. **综合 + 写报告** — 按 [reference/output-spec.md](./reference/output-spec.md) 7 段结构产出 **同时输出 `.md` 和 `.html`**（HTML 的象限图是 7 段内的可视化模块，不新增第 8 段，见 [reference/html-template.md](./reference/html-template.md)）
 
 ## Five Disciplines（违反即失败）
 
@@ -38,7 +38,7 @@ description: Use when the user asks for competitive analysis of a specific produ
 | 1 | 流程 | 第一步必澄清；找到候选立即调研，不再扩展 |
 | 2 | 预算 | 工具调用 ≤ 30 次；时间过半必须开始综合 |
 | 3 | 引用 | **事实必有 URL，分析判断基于事实**；禁构造 URL |
-| 4 | 错误 | 失败换路而非重试同输入；连续 2 次失败标 `null` |
+| 4 | 错误 | 失败换路而非重试同输入；redirect 跟随新 URL；连续 2 次失败标 `null` |
 | 5 | 收敛 | 综合阶段禁扩竞品；补搜关键字段 ≤ 3 次 |
 
 完整版见 [reference/disciplines.md](./reference/disciplines.md)。
@@ -72,7 +72,8 @@ description: Use when the user asks for competitive analysis of a specific produ
 | 输出自由叙述长文 | 强制 7 段表格化结构，叙述只在执行摘要和战略建议段 |
 | 给目标产品 SWOT 只写优点 | S/W/O/T 必须各 ≥ 2 条；差评和威胁不可空 |
 | 综合阶段反复补搜 | 补搜 ≤ 3 次，超过即用现有数据出报告 |
-| 用 "many users believe" 类模糊词 | 必须 "Reddit 用户 X 评论..."（带 source）或不写 |
+| 用 "many users believe" 类模糊词 | 必须引用具体 review / 讨论来源；Reddit 不可直接 fetch 时改用搜索摘要或 review 聚合站 |
+| HTML 另起第 8 段放图表 | 仍保持 7 段；象限图、定价条、SWOT 网格嵌入对应段落 |
 
 ## Output Acceptance Criteria
 
@@ -84,6 +85,8 @@ description: Use when the user asks for competitive analysis of a specific produ
 - 定价来自官网或标"未公开"
 - 差评不可空，不足须显式声明
 - 若用了澄清默认值，报告头必须声明
+- 至少 1 条跨竞品共性洞察
+- 高风险事实（价格 / 融资 / 收购 / 用户数 / star 数）必须进入事实风险清单或二次确认
 
 ## Reference Files
 
@@ -93,6 +96,8 @@ description: Use when the user asks for competitive analysis of a specific produ
 - [reference/html-template.md](./reference/html-template.md) — HTML 报告模板（Mermaid 象限图 / SWOT 网格 / 定价条形 / 战略卡片）
 - [reference/integration.md](./reference/integration.md) — 与本项目 agent 系统的对接（开发者参考）
 - [schemas/competitor-card.json](./schemas/competitor-card.json) — 单竞品 JSON Schema
+- [scripts/validate_report.py](./scripts/validate_report.py) — 跑完 case 后的轻量结构验收
+- [agents/openai.yaml](./agents/openai.yaml) — UI 元数据与默认调用提示
 - [CHANGELOG.md](./CHANGELOG.md) — 版本迭代历史
 
 ## Examples
@@ -101,6 +106,6 @@ description: Use when the user asks for competitive analysis of a specific produ
 
 | Case | 状态 |
 |------|------|
-| Cursor | 待跑（5/15-5/17）|
+| Cursor | 已跑通（v0.2 baseline；v0.3 已吸收问题）|
 | Notion AI | 待跑（5/18）|
 | Linear | 待跑（5/19）|

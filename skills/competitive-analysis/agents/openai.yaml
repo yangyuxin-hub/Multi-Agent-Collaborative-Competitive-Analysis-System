@@ -1,0 +1,8 @@
+interface:
+  display_name: "Competitive Analysis"
+  short_description: "结构化竞品分析与引用追踪报告"
+  brand_color: "#0969DA"
+  default_prompt: "Use $competitive-analysis to analyze Cursor's competitors with pricing, feature matrix, user pain points, SWOT, and cited sources."
+
+policy:
+  allow_implicit_invocation: true

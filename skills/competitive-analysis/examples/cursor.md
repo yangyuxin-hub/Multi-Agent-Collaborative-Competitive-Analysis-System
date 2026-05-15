@@ -69,14 +69,15 @@
 | "NVIDIA 4 万工程师 / Fortune 500 50%+" | cursor.com | 官网主张但无第三方核实 |
 | "OpenAI $3B 收购 Windsurf 失败，Google 出 $2.4B 抽走核心团队" | Bloomberg / Fortune | 时间线 / 金额需对照原文 |
 
-## 对 SKILL.md v0.2 的修订建议（→ v0.3）
+## 对 SKILL.md v0.2 的修订建议（→ v0.3，已应用 2026-05-14）
 
-1. **Tool 使用顺序**：现在 playbook 是 search → fetch → extract，应改为 **"先 search 评估官网信息密度"，再决定 fetch 几页**（避免 Trae / Windsurf 这种 fetch 拿到空内容的浪费）
-2. **Reddit 不可用**：在 disciplines.md 错误纪律里加一条"Reddit 在 CC 中不可 fetch，差评走 review 聚合站"
-3. **Redirect 处理**：错误纪律加一条"fetch 返回 redirect 时跟随新 URL，不算失败"
-4. **自由文本兜底**：playbook 第 2 步澄清里加一行"若用户用自由文本回答数量，LLM 自行解析为合理整数；若解析失败，用默认 5"
-5. **官方来源优先级**：实际情况是**定价页 > 官网 > 评测站**（Trae 官网空但评测站有完整定价表）
-6. **共性洞察段**：本 case 自发产出了"共性洞察：所有商业产品都遭遇用量计费危机"这种横向观察，这是高质量报告的标志，**应在 output-spec.md 提示主 agent 主动寻找跨竞品共性**
+1. **Tool 使用顺序**：现在 playbook 是 search → fetch → extract，应改为 **"先 search 评估官网信息密度"，再决定 fetch 几页**（避免 Trae / Windsurf 这种 fetch 拿到空内容的浪费）✅
+2. **Reddit 不可用**：在 disciplines.md 错误纪律里加一条"Reddit 在 CC 中不可 fetch，差评走 review 聚合站" ✅
+3. **Redirect 处理**：错误纪律加一条"fetch 返回 redirect 时跟随新 URL，不算失败" ✅
+4. **自由文本兜底**：playbook 第 2 步澄清里加一行"若用户用自由文本回答数量，LLM 自行解析为合理整数；若解析失败，用默认 5" ✅
+5. **官方来源优先级**：实际情况是**定价页 > 官网 > 评测站**（Trae 官网空但评测站有完整定价表）✅
+6. **共性洞察段**：本 case 自发产出了"共性洞察：所有商业产品都遭遇用量计费危机"这种横向观察，这是高质量报告的标志，**应在 output-spec.md 提示主 agent 主动寻找跨竞品共性** ✅
+7. **新增自动验收**：补 `scripts/validate_report.py` 检查 7 段结构、可视化模块、共性洞察、HTML 段落编号 ✅
 
 ## 启示总结
 
@@ -84,7 +85,7 @@
 - ✅ 五大纪律基本被遵守（流程 / 预算 / 引用 / 错误 / 收敛）
 - ⚠️ 引用真实性需人工抽查（LLM 可能在引用具体数字时打折扣）
 - ⚠️ 补搜额度用满（3/3），说明初次 fetch 阶段对"哪些信息要先抓"判断不够准
-- 🎯 v0.3 主要补 fetch 策略 + 错误处理两块
+- 🎯 v0.3 已补 fetch 策略 / 错误处理 / 事实风险 / HTML 契约 / 自动验收
 
 ## 时间线
 

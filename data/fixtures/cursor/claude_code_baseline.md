@@ -171,3 +171,13 @@ AI 编程工具赛道在 2025-2026 完成首轮洗牌：**Cursor 凭借 AI-nativ
 **Cline**
 - [cline.bot](https://cline.bot), [cline.bot/pricing](https://cline.bot/pricing)
 - [Cline $32M funding · GlobeNewswire](https://www.globenewswire.com/news-release/2025/07/31/3125274/0/en/Cline-Raises-32M-in-Seed-and-Series-A-Funding-to-Bring-Agentic-AI-Coding-to-Enterprise-Software-Teams.html)
+
+## 附录：事实风险清单
+
+| 陈述 | 来源 | 风险 | 处理 |
+|------|------|------|------|
+| "Cursor 实际月费 $40-50（120% 溢价）" | eesel.ai review | 第三方评测，需抽查样本口径 | 战略建议中保留为用户感知风险，正式报告前待人工确认 |
+| "Ryz Labs 测试 Copilot 大代码库准确率仅 50%" | NxCode 转引 | 原始报告链接缺失 | 不作为核心结论，只作为待验证风险 |
+| "Cline 61.8k GitHub stars" | cline.bot | star 数随时间变化 | 后续 case 需以 GitHub 实时数据复核 |
+| "NVIDIA 4 万工程师 / Fortune 500 50%+" | cursor.com | 官网自述，缺少第三方核验 | 可作为官方 claim，表述时注明来自官网 |
+| "OpenAI $3B 收购 Windsurf 失败，Google 出 $2.4B 抽走核心团队" | Fortune / Bloomberg 转述 | 交易时间线和金额需对原文 | 战略判断前需人工复核 |

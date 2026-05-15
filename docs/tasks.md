@@ -12,9 +12,9 @@
 - **当前阶段**：阶段 0 — 开工前准备（5/19 前完成）
 - **下一步要做**：
   1. 注册 Anthropic / Tavily / Serper key + 写 `.env.example`
-  2. 跑 Notion AI 竞品分析（skill v0.3 实战，复用 Cursor case 改进路径）
+  2. 跑 Notion AI 竞品分析（skill v0.3 实战后，观察是否需要 v0.4 赛道分支）
   3. 注册部署平台账号（Vercel / Render / Neon）
-- **最近完成**：Cursor 竞品分析 baseline + skill v0.2 实战验证（21 个工具调用，发现 6 处改进点）
+- **最近完成**：Cursor 竞品分析 baseline + skill v0.3 优化（吸收 6 处实战问题，新增结构验收脚本）
 - **最近一次卡点**：（无）
 - **风险触发**：（无）
 
@@ -32,9 +32,9 @@
 - [x] 🔴 **用 Claude Code 跑一次 Cursor 竞品分析**（已完成 2026-05-14）
   - [x] 输出归档到 `data/fixtures/cursor/claude_code_baseline.md`
   - [x] 案例笔记 `skills/competitive-analysis/examples/cursor.md`（含执行统计 + 6 处问题与启示）
-  - [x] CHANGELOG 加入 v0.3 待办（6 处改进点）
+  - [x] CHANGELOG 记录 v0.3 实际修订与验证结果
   - [ ] **待人工**：引用真实性抽查 5 条事实
-  - [ ] **待人工**：把 v0.3 改进点应用到 SKILL.md / reference/
+  - [x] 把 v0.3 改进点应用到 SKILL.md / reference/，并同步 schema / prompt / baseline HTML
 - [ ] 🟡 clone GPT-Researcher 跑一次 Notion AI 调研，截图存档（另一种范式对照组）
 - [ ] 🟡 选定部署平台：前端 Vercel + 后端 Render + Neon PG，账号注册
 - [ ] 🟢 与队友（如有）对一次 prompt 草稿

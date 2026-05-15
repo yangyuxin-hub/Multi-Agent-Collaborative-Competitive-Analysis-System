@@ -44,10 +44,14 @@
 - ❌ 禁止用 "many users believe..." 类模糊词替代具体引用
 - ✅ 来源无法确认时写 "信息不足，建议进一步调研"，不要猜测
 - ✅ 报告中事实陈述标注 inline URL（如 `[github.com/features/copilot]`）
+- ✅ 价格 / 融资 / 收购 / 客户数量 / star 数 / 用户数属于高风险事实；没有一手来源二次确认时，必须进入事实风险清单
 
 ## 4. 错误纪律
 
 - `WebFetch` 失败 → **换 URL** 而非重试同一个
+- `WebFetch` 返回 redirect / moved / canonical URL → 跟随新 URL，不计为失败
+- Reddit 页面不可直接 fetch → 不要反复重试；改用 WebSearch 摘要、HN、G2、Capterra、dev.to、The Register、Trustpilot 或其他 review 聚合站
+- 官网首页内容极薄 → 保留官网作为身份来源，改抓 pricing / docs / changelog / review 站补足功能和口碑
 - `WebSearch` 结果差 → **换 query 关键词**（最多换 1 次）
 - 同竞品同字段连续 2 次抓不到 → **标 `null` 跳过**，进入 `gaps`
 - 整个竞品调研失败 → 在报告中显式声明 "X 信息不足"，不要伪造

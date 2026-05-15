@@ -44,6 +44,7 @@
 
     "pricing_tiers": {
       "type": "array",
+      "minItems": 1,
       "items": {
         "type": "object",
         "required": ["name", "price", "limits", "source_url"],
@@ -74,11 +75,13 @@
     "positive_reviews": {
       "type": "array",
       "items": { "type": "string" },
+      "minItems": 1,
       "description": "用户好评关键点，不能为空"
     },
     "negative_reviews": {
       "type": "array",
       "items": { "type": "string" },
+      "minItems": 1,
       "description": "用户差评 / 痛点（机会所在）；若评价不足必须显式声明 'review_insufficient'"
     },
     "growth_signals": {
@@ -91,7 +94,7 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["url", "title", "used_for"],
+        "required": ["url", "title", "fetched_at", "type", "used_for"],
         "properties": {
           "url": { "type": "string", "format": "uri" },
           "title": { "type": "string" },

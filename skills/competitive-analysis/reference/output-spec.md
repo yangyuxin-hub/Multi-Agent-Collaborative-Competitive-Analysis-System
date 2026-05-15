@@ -17,6 +17,8 @@
 - 卡片化战略建议
 - 摘要 callout 块
 
+**重要**：HTML 仍然只有 7 个主段落。Mermaid 象限图、定价条、SWOT 网格都是 7 段结构内的可视化模块，不能新增 "8. 图表" 或 "8. 战略建议"。
+
 HTML 模板见 [`html-template.md`](./html-template.md)。
 
 ---
@@ -71,7 +73,9 @@ HTML 模板见 [`html-template.md`](./html-template.md)。
 
 - 每个竞品好评 / 差评各 ≥ 1 条
 - 差评 / 痛点**不可空**；若公开评价不足，显式声明 "评价不足"
-- 引用来源（Reddit / G2 等）inline URL
+- 引用来源（G2 / Capterra / HN / dev.to / review 站 / 可访问的 Reddit 搜索结果等）inline URL
+
+本段末尾必须写 **跨竞品共性洞察**：至少 1 条横向规律，不能只列单个产品优缺点。
 
 ### 6. 目标产品 SWOT
 
@@ -93,6 +97,20 @@ HTML 模板见 [`html-template.md`](./html-template.md)。
 - 不要写"加强用户体验"这种空话
 - 要写"针对 Copilot 的 SaaS 销售优势，做 battlecard 强调 IDE 级 agentic editing 体验"这种具体的
 - 每条建议引用支撑事实（如"基于第 5 段 Copilot 用户抱怨..."）
+
+### 附录：事实风险清单（不计入 7 段）
+
+如果报告中出现以下高风险事实，必须列出人工复核项，除非已有一手来源二次确认：
+- 价格 / 套餐限额 / 用量额度
+- 融资金额 / 收购金额 / 估值 / 交易状态
+- 客户数量 / 用户数 / 员工数 / GitHub star 数
+- 单一用户评价被用于支撑强结论
+
+格式：
+
+| 陈述 | 来源 | 风险 | 处理 |
+|------|------|------|------|
+| ... | URL | 第三方转述 / 时效不明 / 原始来源缺失 | 已降级表述 / 待人工确认 |
 
 ---
 
@@ -143,5 +161,14 @@ HTML 模板见 [`html-template.md`](./html-template.md)。
 | 10 | **双格式产出** | 必须同时产出 `.md` 和 `.html` 两个文件 |
 | 11 | **可视化必备** | HTML 必须含：Mermaid 定位象限图 + SWOT 2×2 网格 + 定价条形对比 + 卡片化战略建议 |
 | 12 | **跨竞品共性洞察** | 至少 1 段（如"用量计费危机"这种横向规律），不能只列单产品差评 |
+| 13 | **事实风险清单** | 高风险事实必须二次确认或列入附录 |
+| 14 | **HTML 段落一致** | HTML 主段落仍为 7 段，图表不新增编号 |
+| 15 | **移动端可读** | 390px 宽度下页面不应整体横向溢出；宽表在表格容器内滚动 |
 
 跑完自检：逐条对照验收清单，不达标的修复或显式声明缺漏原因。
+
+可运行轻量结构验收：
+
+```bash
+python skills/competitive-analysis/scripts/validate_report.py --md data/fixtures/{slug}/report.md --html data/fixtures/{slug}/report.html
+```

@@ -58,6 +58,7 @@
     padding: 24px 28px;
     margin-bottom: 24px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    overflow-x: auto;
   }
   section h2 {
     font-size: 22px;
@@ -69,6 +70,7 @@
   section h3 { font-size: 16px; margin: 24px 0 8px; color: var(--text); }
   table {
     width: 100%;
+    min-width: 720px;
     border-collapse: collapse;
     margin: 12px 0;
     font-size: 14px;
@@ -87,6 +89,11 @@
     top: 0;
   }
   tr:hover { background: rgba(9,105,218,0.03); }
+  .table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
   .check-full { color: var(--success); font-weight: 700; }
   .check-partial { color: var(--warning); font-weight: 700; }
   .check-none { color: var(--danger); font-weight: 700; }
@@ -165,7 +172,9 @@
     margin: 16px 0;
     border-radius: 8px;
     border: 1px dashed var(--border);
+    overflow-x: auto;
   }
+  .mermaid svg { max-width: 100%; height: auto; }
 
   /* 摘要 callout */
   .summary-callout {
@@ -190,7 +199,8 @@
 
   /* 响应式 */
   @media (max-width: 768px) {
-    body { padding: 16px 12px; }
+    body { padding: 16px 12px; overflow-x: hidden; }
+    section { padding: 20px 16px; }
     .swot-grid { grid-template-columns: 1fr; }
     .sources-list { columns: 1; }
     table { font-size: 12px; }
@@ -356,7 +366,7 @@
 </section>
 
 <section>
-  <h2>7. 定位象限图</h2>
+  <h3>定位象限图</h3>
   <p style="color:var(--text-soft); font-size:13px;">两个核心维度：横轴价格 ↔ 纵轴 Agentic 自主程度。点位代表市场认知与功能现状的综合判断。</p>
   <div class="mermaid">
 quadrantChart
@@ -380,7 +390,7 @@ quadrantChart
 </section>
 
 <section>
-  <h2>8. 战略建议</h2>
+  <h2>7. 战略建议</h2>
 
   <div class="strategy-card">
     <h4>建议 1：定价大改革 — 从黑盒转向透明可预测</h4>
@@ -454,6 +464,22 @@ quadrantChart
       <li><a href="https://www.globenewswire.com/news-release/2025/07/31/3125274/0/en/Cline-Raises-32M-in-Seed-and-Series-A-Funding-to-Bring-Agentic-AI-Coding-to-Enterprise-Software-Teams.html">$32M funding · GlobeNewswire</a></li>
     </ul>
   </div>
+</section>
+
+<section>
+  <h2>附录：事实风险清单</h2>
+  <table>
+    <thead>
+      <tr><th>陈述</th><th>来源</th><th>风险</th><th>处理</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Cursor 实际月费 $40-50</td><td>eesel.ai review</td><td>第三方评测，需抽查样本口径</td><td>保留为用户感知风险，正式报告前待人工确认</td></tr>
+      <tr><td>Copilot 大代码库准确率仅 50%</td><td>NxCode 转引</td><td>原始报告链接缺失</td><td>不作为核心结论，只作为待验证风险</td></tr>
+      <tr><td>Cline 61.8k GitHub stars</td><td>cline.bot</td><td>star 数随时间变化</td><td>后续 case 以 GitHub 实时数据复核</td></tr>
+      <tr><td>NVIDIA 4 万工程师 / Fortune 500 50%+</td><td>cursor.com</td><td>官网自述，缺少第三方核验</td><td>作为官方 claim，表述时注明来自官网</td></tr>
+      <tr><td>Windsurf 交易金额和时间线</td><td>Fortune / Bloomberg 转述</td><td>金额和交易状态需对原文</td><td>战略判断前需人工复核</td></tr>
+    </tbody>
+  </table>
 </section>
 
 <script>
